@@ -1,6 +1,5 @@
 import React, { useEffect, useRef } from 'react';
 import { ChevronDown, Zap, Target, Code } from 'lucide-react';
-import BabylonScene from './BabylonScene';
 
 const HeroSection: React.FC = () => {
   const statsRef = useRef<HTMLDivElement>(null);
@@ -37,11 +36,6 @@ const HeroSection: React.FC = () => {
           <div className="particle absolute w-1 h-1 bg-cyber-green rounded-full" style={{top: '80%', left: '20%', animationDelay: '1s'}}></div>
           <div className="particle absolute w-2 h-2 bg-cyber-orange rounded-full" style={{top: '30%', left: '50%', animationDelay: '3s'}}></div>
         </div>
-      </div>
-
-      {/* Babylon.js 3D Scene */}
-      <div className="absolute inset-0 z-0 opacity-40">
-        <BabylonScene />
       </div>
 
       {/* Content */}
