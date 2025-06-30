@@ -113,10 +113,10 @@ const ChallengeGrid: React.FC = () => {
   const categories = ['All', 'Web Security', 'Binary Exploitation', 'Cryptography', 'Network Security', 'Malware Analysis'];
   
   const difficultyColors = {
-    'Beginner': 'from-cyber-green to-cyber-blue',
-    'Intermediate': 'from-cyber-blue to-cyber-purple',
-    'Advanced': 'from-cyber-purple to-cyber-pink',
-    'Expert': 'from-cyber-orange to-cyber-pink'
+    'Beginner': 'from-green-500 to-cyan-500',
+    'Intermediate': 'from-cyan-500 to-blue-500',
+    'Advanced': 'from-blue-500 to-purple-500',
+    'Expert': 'from-purple-500 to-pink-500'
   };
 
   const filteredChallenges = mockChallenges.filter(challenge => 
@@ -124,21 +124,21 @@ const ChallengeGrid: React.FC = () => {
   );
 
   return (
-    <section id="challenges" className="py-20 bg-cyber-dark relative overflow-hidden">
+    <section id="challenges" className="py-20 bg-secondary relative overflow-hidden">
       {/* Background Pattern */}
       <div className="absolute inset-0 opacity-5">
-        <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width=%2240%22 height=%2240%22 viewBox=%220 0 40 40%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cg fill=%22%2300D4FF%22 fill-opacity=%221%22%3E%3Cpath d=%22M20 20h20v20H20V20zm-20 0h20v20H0V20z%22/%3E%3C/g%3E%3C/svg%3E')]"></div>
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width=%2240%22 height=%2240%22 viewBox=%220 0 40 40%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cg fill=%22%2300B4D8%22 fill-opacity=%221%22%3E%3Cpath d=%22M20 20h20v20H20V20zm-20 0h20v20H0V20z%22/%3E%3C/g%3E%3C/svg%3E')]"></div>
       </div>
 
       <div className="container mx-auto px-6 relative z-10">
         {/* Section Header */}
         <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-orbitron font-bold mb-6">
-            <span className="bg-gradient-to-r from-cyber-blue to-cyber-purple bg-clip-text text-transparent">
+          <h2 className="text-4xl md:text-5xl font-heading font-bold mb-6">
+            <span className="gradient-text">
               Cybersecurity Challenges
             </span>
           </h2>
-          <p className="text-xl text-gray-300 max-w-2xl mx-auto font-inter">
+          <p className="text-xl text-secondary max-w-2xl mx-auto font-primary">
             Test your skills against real-world scenarios and climb the leaderboard
           </p>
         </div>
@@ -151,8 +151,8 @@ const ChallengeGrid: React.FC = () => {
               onClick={() => setFilter(category)}
               className={`px-6 py-3 rounded-lg font-semibold transition-all duration-300 ${
                 filter === category
-                  ? 'bg-gradient-to-r from-cyber-blue to-cyber-purple text-white shadow-lg shadow-cyber-blue/25'
-                  : 'bg-white/5 text-gray-300 hover:bg-white/10 backdrop-blur-sm border border-white/10'
+                  ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-lg'
+                  : 'glass text-secondary hover:bg-glass backdrop-blur-sm border'
               }`}
             >
               {category}
@@ -165,14 +165,14 @@ const ChallengeGrid: React.FC = () => {
           {filteredChallenges.map((challenge) => (
             <div
               key={challenge.id}
-              className="group relative bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6 hover:bg-white/10 transition-all duration-300 hover:transform hover:scale-105 hover:shadow-xl hover:shadow-cyber-blue/10"
+              className="group relative card hover-lift hover-scale transition-all"
             >
               {/* Lock Overlay */}
               {challenge.isLocked && (
                 <div className="absolute inset-0 bg-black/60 backdrop-blur-sm rounded-xl flex items-center justify-center z-10">
                   <div className="text-center">
-                    <Lock className="w-12 h-12 text-cyber-orange mx-auto mb-2" />
-                    <p className="text-cyber-orange font-semibold">Complete Prerequisites</p>
+                    <Lock className="w-12 h-12 text-warning mx-auto mb-2" />
+                    <p className="text-warning font-semibold">Complete Prerequisites</p>
                   </div>
                 </div>
               )}
@@ -183,45 +183,45 @@ const ChallengeGrid: React.FC = () => {
               </div>
 
               {/* Category */}
-              <div className="text-cyber-blue text-sm font-semibold mb-2 font-inter">
+              <div className="text-primary-color text-sm font-semibold mb-2 font-primary">
                 {challenge.category}
               </div>
 
               {/* Title */}
-              <h3 className="text-xl font-bold text-white mb-3 font-orbitron group-hover:text-cyber-blue transition-colors">
+              <h3 className="text-xl font-bold text-primary mb-3 font-heading group-hover:text-primary-color transition-colors">
                 {challenge.title}
               </h3>
 
               {/* Description */}
-              <p className="text-gray-300 mb-6 text-sm leading-relaxed font-inter">
+              <p className="text-secondary mb-6 text-sm leading-relaxed font-primary">
                 {challenge.description}
               </p>
 
               {/* Stats */}
-              <div className="flex items-center justify-between mb-6 text-sm text-gray-400">
+              <div className="flex items-center justify-between mb-6 text-sm text-tertiary">
                 <div className="flex items-center space-x-1">
-                  <Trophy className="w-4 h-4 text-cyber-orange" />
+                  <Trophy className="w-4 h-4 text-warning" />
                   <span>{challenge.points} pts</span>
                 </div>
                 <div className="flex items-center space-x-1">
-                  <Users className="w-4 h-4 text-cyber-blue" />
+                  <Users className="w-4 h-4 text-primary-color" />
                   <span>{challenge.participants.toLocaleString()}</span>
                 </div>
                 <div className="flex items-center space-x-1">
-                  <Clock className="w-4 h-4 text-cyber-green" />
+                  <Clock className="w-4 h-4 text-success" />
                   <span>{challenge.timeEstimate}</span>
                 </div>
               </div>
 
               {/* Progress Bar */}
               <div className="mb-6">
-                <div className="flex justify-between text-sm text-gray-400 mb-2">
+                <div className="flex justify-between text-sm text-tertiary mb-2">
                   <span>Completion Rate</span>
                   <span>{challenge.completionRate}%</span>
                 </div>
-                <div className="w-full bg-gray-700 rounded-full h-2">
+                <div className="w-full bg-tertiary rounded-full h-2">
                   <div 
-                    className="bg-gradient-to-r from-cyber-green to-cyber-blue h-2 rounded-full transition-all duration-500"
+                    className="bg-gradient-to-r from-success to-primary-color h-2 rounded-full transition-all duration-500"
                     style={{ width: `${challenge.completionRate}%` }}
                   ></div>
                 </div>
@@ -231,7 +231,7 @@ const ChallengeGrid: React.FC = () => {
               <button 
                 onClick={() => handleChallengeClick(challenge)}
                 disabled={challenge.isLocked}
-                className="w-full py-3 bg-gradient-to-r from-cyber-blue/20 to-cyber-purple/20 border border-cyber-blue/30 rounded-lg text-cyber-blue font-semibold hover:from-cyber-blue/30 hover:to-cyber-purple/30 transition-all duration-300 flex items-center justify-center space-x-2 group-hover:shadow-lg group-hover:shadow-cyber-blue/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full py-3 glass border border-primary-color rounded-lg text-primary-color font-semibold hover:bg-primary-color hover:text-inverse transition-all duration-300 flex items-center justify-center space-x-2 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <span>{challenge.isLocked ? 'Locked' : 'Start Challenge'}</span>
                 {!challenge.isLocked && <ChevronRight className="w-4 h-4" />}

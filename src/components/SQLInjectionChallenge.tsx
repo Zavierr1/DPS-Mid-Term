@@ -107,16 +107,16 @@ const SQLInjectionChallenge: React.FC<SQLInjectionChallengeProps> = ({ isOpen, o
   const challenge = sqlChallenges[currentChallenge];
 
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-gradient-to-br from-cyber-darker/95 to-cyber-dark/95 backdrop-blur-lg border border-cyber-blue/30 rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div className="bg-white/95 backdrop-blur-lg border border-primary/30 rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
         {/* Header */}
-        <div className="p-6 border-b border-cyber-blue/20">
+        <div className="p-6 border-b border-primary/20">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-2xl font-bold font-orbitron text-white mb-2">
+              <h2 className="text-2xl font-bold font-heading text-primary mb-2">
                 SQL Injection Challenge
               </h2>
-              <div className="flex items-center space-x-6 text-sm text-gray-400">
+              <div className="flex items-center space-x-6 text-sm text-surface-600">
                 <span>Challenge {currentChallenge + 1} of {sqlChallenges.length}</span>
                 <span>Score: {totalScore}</span>
                 <span>Time: {formatTime(timeElapsed)}</span>
@@ -125,7 +125,7 @@ const SQLInjectionChallenge: React.FC<SQLInjectionChallengeProps> = ({ isOpen, o
             </div>
             <button
               onClick={onClose}
-              className="text-gray-400 hover:text-white transition-colors"
+              className="text-surface-600 hover:text-primary transition-colors"
             >
               <X className="w-6 h-6" />
             </button>
@@ -134,9 +134,9 @@ const SQLInjectionChallenge: React.FC<SQLInjectionChallengeProps> = ({ isOpen, o
 
         {/* Progress Bar */}
         <div className="px-6 py-3">
-          <div className="w-full bg-gray-700 rounded-full h-2">
+          <div className="w-full bg-surface-200 rounded-full h-2">
             <div 
-              className="bg-gradient-to-r from-cyber-blue to-cyber-purple h-2 rounded-full transition-all duration-500"
+              className="bg-gradient-to-r from-primary to-secondary h-2 rounded-full transition-all duration-500"
               style={{ width: `${((currentChallenge + 1) / sqlChallenges.length) * 100}%` }}
             ></div>
           </div>
@@ -145,45 +145,45 @@ const SQLInjectionChallenge: React.FC<SQLInjectionChallengeProps> = ({ isOpen, o
         {/* Challenge Content */}
         <div className="p-6 space-y-6">
           {/* Question */}
-          <div className="bg-cyber-dark/50 p-4 rounded-lg border border-cyber-blue/20">
+          <div className="bg-surface-100 p-4 rounded-lg border border-primary/20">
             <div className="flex items-start space-x-3">
-              <Target className="w-5 h-5 text-cyber-orange mt-1 flex-shrink-0" />
+              <Target className="w-5 h-5 text-warning mt-1 flex-shrink-0" />
               <div>
-                <h3 className="text-lg font-semibold text-white mb-2">Objective</h3>
-                <p className="text-gray-300">{challenge.question}</p>
+                <h3 className="text-lg font-semibold text-surface-800 mb-2">Objective</h3>
+                <p className="text-surface-700">{challenge.question}</p>
               </div>
             </div>
           </div>
 
           {/* Vulnerable Code */}
-          <div className="bg-cyber-gray/50 p-4 rounded-lg border border-gray-600">
-            <h4 className="text-white font-semibold mb-2 flex items-center">
-              <Terminal className="w-4 h-4 mr-2 text-cyber-green" />
+          <div className="bg-surface-100 p-4 rounded-lg border border-surface-300">
+            <h4 className="text-surface-800 font-semibold mb-2 flex items-center">
+              <Terminal className="w-4 h-4 mr-2 text-success" />
               Vulnerable Code
             </h4>
-            <pre className="text-cyber-green font-mono text-sm bg-black/30 p-3 rounded overflow-x-auto">
+            <pre className="text-success font-mono text-sm bg-surface-900 text-surface-100 p-3 rounded overflow-x-auto">
               {challenge.vulnerableCode}
             </pre>
           </div>
 
           {/* Input Field */}
           <div className="space-y-3">
-            <label className="block text-white font-semibold">Your SQL Injection Payload:</label>
+            <label className="block text-surface-800 font-semibold">Your SQL Injection Payload:</label>
             <div className="relative">
               <input
                 type="text"
                 value={userInput}
                 onChange={(e) => setUserInput(e.target.value)}
                 placeholder="Enter your SQL injection payload..."
-                className="w-full p-4 bg-cyber-dark/50 border border-cyber-blue/30 rounded-lg text-white placeholder-gray-400 focus:border-cyber-blue focus:outline-none focus:ring-2 focus:ring-cyber-blue/20 font-mono"
+                className="w-full p-4 bg-surface-50 border border-primary/30 rounded-lg text-surface-800 placeholder-surface-500 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 font-mono"
                 onKeyPress={(e) => e.key === 'Enter' && checkAnswer()}
               />
               {isCorrect !== null && (
                 <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
                   {isCorrect ? (
-                    <CheckCircle className="w-6 h-6 text-cyber-green" />
+                    <CheckCircle className="w-6 h-6 text-success" />
                   ) : (
-                    <XCircle className="w-6 h-6 text-cyber-pink" />
+                    <XCircle className="w-6 h-6 text-error" />
                   )}
                 </div>
               )}
@@ -194,7 +194,7 @@ const SQLInjectionChallenge: React.FC<SQLInjectionChallengeProps> = ({ isOpen, o
           <div className="flex items-center justify-between">
             <button
               onClick={() => setShowHint(!showHint)}
-              className="flex items-center space-x-2 text-cyber-orange hover:text-cyber-pink transition-colors"
+              className="flex items-center space-x-2 text-warning hover:text-accent transition-colors"
             >
               <Lightbulb className="w-4 h-4" />
               <span>{showHint ? 'Hide Hint' : 'Show Hint'}</span>
@@ -203,15 +203,15 @@ const SQLInjectionChallenge: React.FC<SQLInjectionChallengeProps> = ({ isOpen, o
             <button
               onClick={checkAnswer}
               disabled={!userInput.trim()}
-              className="px-6 py-2 bg-gradient-to-r from-cyber-blue to-cyber-purple rounded-lg text-white font-semibold hover:shadow-lg hover:shadow-cyber-blue/20 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Submit
             </button>
           </div>
 
           {showHint && (
-            <div className="bg-cyber-orange/10 border border-cyber-orange/30 p-4 rounded-lg">
-              <p className="text-cyber-orange"><strong>Hint:</strong> {challenge.hint}</p>
+            <div className="bg-warning/10 border border-warning/30 p-4 rounded-lg">
+              <p className="text-warning"><strong>Hint:</strong> {challenge.hint}</p>
             </div>
           )}
 
@@ -219,19 +219,19 @@ const SQLInjectionChallenge: React.FC<SQLInjectionChallengeProps> = ({ isOpen, o
           {isCorrect !== null && (
             <div className={`p-4 rounded-lg border ${
               isCorrect 
-                ? 'bg-cyber-green/10 border-cyber-green/30' 
-                : 'bg-cyber-pink/10 border-cyber-pink/30'
+                ? 'bg-success/10 border-success/30' 
+                : 'bg-error/10 border-error/30'
             }`}>
               {isCorrect ? (
                 <div>
-                  <p className="text-cyber-green font-semibold mb-2">Correct! Well done!</p>
-                  <p className="text-gray-300 text-sm">{challenge.explanation}</p>
+                  <p className="text-success font-semibold mb-2">Correct! Well done!</p>
+                  <p className="text-surface-700 text-sm">{challenge.explanation}</p>
                   {currentChallenge < sqlChallenges.length - 1 && (
-                    <p className="text-cyber-blue mt-2">Moving to next challenge...</p>
+                    <p className="text-primary mt-2">Moving to next challenge...</p>
                   )}
                 </div>
               ) : (
-                <p className="text-cyber-pink">Incorrect. Try again or check the hint!</p>
+                <p className="text-error">Incorrect. Try again or check the hint!</p>
               )}
             </div>
           )}

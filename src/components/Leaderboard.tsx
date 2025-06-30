@@ -17,83 +17,83 @@ const Leaderboard: React.FC = () => {
   const getRankIcon = (rank: number) => {
     switch (rank) {
       case 1:
-        return <Trophy className="w-6 h-6 text-cyber-orange" />;
+        return <Trophy className="w-6 h-6 text-amber-500" />;
       case 2:
-        return <Medal className="w-6 h-6 text-gray-300" />;
+        return <Medal className="w-6 h-6 text-slate-400" />;
       case 3:
         return <Award className="w-6 h-6 text-amber-600" />;
       default:
-        return <span className="text-gray-400 font-bold text-lg">#{rank}</span>;
+        return <span className="text-slate-500 font-bold text-lg">#{rank}</span>;
     }
   };
 
   const getRankGradient = (rank: number) => {
     switch (rank) {
       case 1:
-        return 'from-cyber-orange/20 to-cyber-pink/20 border-cyber-orange/40';
+        return 'from-amber-50 to-yellow-50 border-amber-200';
       case 2:
-        return 'from-gray-500/20 to-gray-300/20 border-gray-400/40';
+        return 'from-slate-50 to-gray-50 border-slate-200';
       case 3:
-        return 'from-amber-600/20 to-amber-400/20 border-amber-500/40';
+        return 'from-amber-50 to-orange-50 border-amber-200';
       default:
-        return 'from-cyber-blue/20 to-cyber-purple/20 border-cyber-blue/30';
+        return 'from-cyan-50 to-blue-50 border-cyan-200';
     }
   };
 
   return (
-    <section id="leaderboard" className="py-20 bg-cyber-darker relative overflow-hidden">
+    <section id="leaderboard" className="py-20 bg-gradient-to-br from-slate-50 via-white to-cyan-50 relative overflow-hidden">
       {/* Background Effects */}
-      <div className="absolute inset-0 bg-gradient-to-br from-cyber-blue/5 via-transparent to-cyber-purple/5"></div>
+      <div className="absolute inset-0 bg-gradient-to-br from-cyan-100/20 via-transparent to-blue-100/20"></div>
       
       <div className="container mx-auto px-6 relative z-10">
         {/* Section Header */}
         <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-orbitron font-bold mb-6">
-            <span className="bg-gradient-to-r from-cyber-orange to-cyber-pink bg-clip-text text-transparent">
+          <h2 className="text-4xl md:text-5xl font-heading font-bold mb-6">
+            <span className="bg-gradient-to-r from-cyan-600 to-blue-700 bg-clip-text text-transparent">
               Global Leaderboard
             </span>
           </h2>
-          <p className="text-xl text-gray-300 max-w-2xl mx-auto font-inter">
+          <p className="text-xl text-slate-600 max-w-2xl mx-auto font-primary">
             See where you rank among the world's top cybersecurity experts
           </p>
         </div>
 
         {/* Leaderboard Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
-          <div className="text-center p-6 bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-r from-cyber-orange/20 to-cyber-pink/20 backdrop-blur-sm border border-cyber-orange/30 flex items-center justify-center">
-              <TrendingUp className="w-8 h-8 text-cyber-orange" />
+          <div className="text-center p-6 bg-white/70 backdrop-blur-sm border border-cyan-200/50 rounded-xl shadow-sm">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-r from-cyan-100 to-blue-100 backdrop-blur-sm border border-cyan-300 flex items-center justify-center">
+              <TrendingUp className="w-8 h-8 text-cyan-600" />
             </div>
-            <div className="text-2xl font-bold text-white font-orbitron mb-2">98,547</div>
-            <div className="text-gray-400 font-inter">Active Hackers</div>
+            <div className="text-2xl font-bold text-slate-800 font-heading mb-2">98,547</div>
+            <div className="text-slate-600 font-primary">Active Hackers</div>
           </div>
 
-          <div className="text-center p-6 bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-r from-cyber-blue/20 to-cyber-purple/20 backdrop-blur-sm border border-cyber-blue/30 flex items-center justify-center">
-              <Trophy className="w-8 h-8 text-cyber-blue" />
+          <div className="text-center p-6 bg-white/70 backdrop-blur-sm border border-cyan-200/50 rounded-xl shadow-sm">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-r from-blue-100 to-cyan-100 backdrop-blur-sm border border-blue-300 flex items-center justify-center">
+              <Trophy className="w-8 h-8 text-blue-600" />
             </div>
-            <div className="text-2xl font-bold text-white font-orbitron mb-2">2.4M</div>
-            <div className="text-gray-400 font-inter">Points Earned</div>
+            <div className="text-2xl font-bold text-slate-800 font-heading mb-2">2.4M</div>
+            <div className="text-slate-600 font-primary">Points Earned</div>
           </div>
 
-          <div className="text-center p-6 bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-r from-cyber-green/20 to-cyber-blue/20 backdrop-blur-sm border border-cyber-green/30 flex items-center justify-center">
-              <Star className="w-8 h-8 text-cyber-green" />
+          <div className="text-center p-6 bg-white/70 backdrop-blur-sm border border-cyan-200/50 rounded-xl shadow-sm">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-r from-teal-100 to-cyan-100 backdrop-blur-sm border border-teal-300 flex items-center justify-center">
+              <Star className="w-8 h-8 text-teal-600" />
             </div>
-            <div className="text-2xl font-bold text-white font-orbitron mb-2">156</div>
-            <div className="text-gray-400 font-inter">Countries</div>
+            <div className="text-2xl font-bold text-slate-800 font-heading mb-2">156</div>
+            <div className="text-slate-600 font-primary">Countries</div>
           </div>
         </div>
 
         {/* Top Hackers */}
         <div className="max-w-4xl mx-auto">
           <div className="flex items-center justify-between mb-8">
-            <h3 className="text-2xl font-orbitron font-bold text-white">
+            <h3 className="text-2xl font-heading font-bold text-slate-800">
               Top Hackers This Month
             </h3>
             <button
               onClick={handleRefresh}
-              className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-cyber-blue/20 to-cyber-purple/20 border border-cyber-blue/30 rounded-lg text-cyber-blue font-semibold hover:from-cyber-blue/30 hover:to-cyber-purple/30 transition-all duration-300"
+              className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-cyan-100 to-blue-100 border border-cyan-300 rounded-lg text-cyan-700 font-semibold hover:from-cyan-200 hover:to-blue-200 transition-all duration-300"
             >
               <RefreshCw className="w-4 h-4" />
               <span>Refresh</span>
@@ -104,7 +104,7 @@ const Leaderboard: React.FC = () => {
             {leaderboard.slice(0, 10).map((user) => (
               <div
                 key={user.id}
-                className={`group relative bg-gradient-to-r ${getRankGradient(user.rank)} backdrop-blur-sm border rounded-xl p-6 hover:scale-[1.02] transition-all duration-300 hover:shadow-xl ${currentUser?.id === user.id ? 'ring-2 ring-cyber-orange/50' : ''}`}
+                className={`group relative bg-gradient-to-r ${getRankGradient(user.rank)} backdrop-blur-sm border rounded-xl p-6 hover:scale-[1.02] transition-all duration-300 hover:shadow-lg ${currentUser?.id === user.id ? 'ring-2 ring-cyan-400/50' : ''}`}
               >
                 <div className="flex items-center space-x-6">
                   {/* Rank */}
@@ -117,22 +117,22 @@ const Leaderboard: React.FC = () => {
                     <img
                       src={user.avatar}
                       alt={user.username}
-                      className="w-12 h-12 rounded-full border-2 border-cyber-blue/50"
+                      className="w-12 h-12 rounded-full border-2 border-cyan-300"
                     />
                   </div>
 
                   {/* User Info */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center space-x-3">
-                      <h4 className="text-lg font-bold text-white font-orbitron truncate">
+                      <h4 className="text-lg font-bold text-slate-800 font-heading truncate">
                         {user.username}
-                        {currentUser?.id === user.id && <span className="text-cyber-orange ml-2">(You)</span>}
+                        {currentUser?.id === user.id && <span className="text-cyan-600 ml-2">(You)</span>}
                       </h4>
-                      <span className="text-xs px-2 py-1 bg-cyber-blue/20 text-cyber-blue rounded-full">
+                      <span className="text-xs px-2 py-1 bg-cyan-100 text-cyan-700 rounded-full">
                         {user.badges[0] || 'Hacker'}
                       </span>
                     </div>
-                    <div className="flex items-center space-x-4 text-sm text-gray-400 mt-1">
+                    <div className="flex items-center space-x-4 text-sm text-slate-500 mt-1">
                       <span>{user.country}</span>
                       <span>•</span>
                       <span>🔥 {user.streak} day streak</span>
@@ -141,22 +141,22 @@ const Leaderboard: React.FC = () => {
 
                   {/* Score */}
                   <div className="flex-shrink-0 text-right">
-                    <div className="text-2xl font-bold text-white font-orbitron">
+                    <div className="text-2xl font-bold text-slate-800 font-heading">
                       {user.totalScore.toLocaleString()}
                     </div>
-                    <div className="text-sm text-gray-400">points</div>
+                    <div className="text-sm text-slate-500">points</div>
                   </div>
                 </div>
 
                 {/* Hover Effect */}
-                <div className="absolute inset-0 bg-gradient-to-r from-cyber-blue/10 to-cyber-purple/10 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <div className="absolute inset-0 bg-gradient-to-r from-cyan-100/30 to-blue-100/30 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               </div>
             ))}
           </div>
 
           {/* View More Button */}
           <div className="text-center mt-12">
-            <button className="px-8 py-4 bg-gradient-to-r from-cyber-blue/20 to-cyber-purple/20 border border-cyber-blue/30 rounded-lg text-cyber-blue font-semibold hover:from-cyber-blue/30 hover:to-cyber-purple/30 transition-all duration-300 hover:shadow-lg hover:shadow-cyber-blue/20">
+            <button className="px-8 py-4 bg-gradient-to-r from-cyan-100 to-blue-100 border border-cyan-300 rounded-lg text-cyan-700 font-semibold hover:from-cyan-200 hover:to-blue-200 transition-all duration-300 hover:shadow-lg">
               View Full Leaderboard
             </button>
           </div>
