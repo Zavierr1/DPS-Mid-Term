@@ -1,0 +1,519 @@
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;500;600;700&display=swap');
+@import "tailwindcss";
+
+/* Custom CSS Variables for Cyberpunk Theme */
+:root {
+  --cyber-blue: #00D4FF;
+  --cyber-purple: #9D4EDD;
+  --cyber-pink: #FF006E;
+  --cyber-green: #00FF88;
+  --cyber-orange: #FF8500;
+  --cyber-dark: #0A0A0A;
+  --cyber-darker: #000000;
+  --cyber-gray: #1A1A1A;
+  --cyber-light-gray: #2A2A2A;
+  --glow-blue: 0 0 20px rgba(0, 212, 255, 0.3);
+  --glow-purple: 0 0 20px rgba(157, 78, 221, 0.3);
+  --glow-pink: 0 0 20px rgba(255, 0, 110, 0.3);
+  --glow-green: 0 0 20px rgba(0, 255, 136, 0.3);
+}
+
+/* Base Styles */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', sans-serif;
+  background: linear-gradient(135deg, var(--cyber-darker) 0%, var(--cyber-dark) 50%, var(--cyber-darker) 100%);
+  color: white;
+  overflow-x: hidden;
+}
+
+/* Typography */
+.font-orbitron {
+  font-family: 'Orbitron', monospace;
+}
+
+.font-inter {
+  font-family: 'Inter', sans-serif;
+}
+
+/* Custom Tailwind Classes */
+.bg-cyber-dark {
+  background-color: var(--cyber-dark);
+}
+
+.bg-cyber-darker {
+  background-color: var(--cyber-darker);
+}
+
+.bg-cyber-gray {
+  background-color: var(--cyber-gray);
+}
+
+.bg-cyber-light-gray {
+  background-color: var(--cyber-light-gray);
+}
+
+.text-cyber-blue {
+  color: var(--cyber-blue);
+}
+
+.text-cyber-purple {
+  color: var(--cyber-purple);
+}
+
+.text-cyber-pink {
+  color: var(--cyber-pink);
+}
+
+.text-cyber-green {
+  color: var(--cyber-green);
+}
+
+.text-cyber-orange {
+  color: var(--cyber-orange);
+}
+
+.border-cyber-blue {
+  border-color: var(--cyber-blue);
+}
+
+.border-cyber-purple {
+  border-color: var(--cyber-purple);
+}
+
+.border-cyber-pink {
+  border-color: var(--cyber-pink);
+}
+
+.border-cyber-green {
+  border-color: var(--cyber-green);
+}
+
+/* Glassmorphism Effects */
+.glass {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+}
+
+.glass-dark {
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+}
+
+.glass-cyber {
+  background: linear-gradient(135deg, 
+    rgba(0, 212, 255, 0.1) 0%, 
+    rgba(157, 78, 221, 0.1) 50%, 
+    rgba(255, 0, 110, 0.1) 100%);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(0, 212, 255, 0.3);
+  border-radius: 20px;
+}
+
+/* Gradient Backgrounds */
+.bg-gradient-cyber {
+  background: linear-gradient(135deg, 
+    var(--cyber-blue) 0%, 
+    var(--cyber-purple) 50%, 
+    var(--cyber-pink) 100%);
+}
+
+.bg-gradient-cyber-dark {
+  background: linear-gradient(135deg, 
+    var(--cyber-darker) 0%, 
+    var(--cyber-dark) 50%, 
+    var(--cyber-gray) 100%);
+}
+
+/* Glow Effects */
+.glow-blue {
+  box-shadow: var(--glow-blue);
+}
+
+.glow-purple {
+  box-shadow: var(--glow-purple);
+}
+
+.glow-pink {
+  box-shadow: var(--glow-pink);
+}
+
+.glow-green {
+  box-shadow: var(--glow-green);
+}
+
+.text-glow-blue {
+  text-shadow: 0 0 10px var(--cyber-blue);
+}
+
+.text-glow-purple {
+  text-shadow: 0 0 10px var(--cyber-purple);
+}
+
+.text-glow-pink {
+  text-shadow: 0 0 10px var(--cyber-pink);
+}
+
+/* Hover Effects */
+.hover-glow-blue:hover {
+  box-shadow: var(--glow-blue);
+  transition: box-shadow 0.3s ease;
+}
+
+.hover-glow-purple:hover {
+  box-shadow: var(--glow-purple);
+  transition: box-shadow 0.3s ease;
+}
+
+.hover-glow-pink:hover {
+  box-shadow: var(--glow-pink);
+  transition: box-shadow 0.3s ease;
+}
+
+/* Animations */
+@keyframes gradient {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes pulse-slow {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes neon-flicker {
+  0%, 100% {
+    opacity: 1;
+    text-shadow: 0 0 10px currentColor;
+  }
+  50% {
+    opacity: 0.8;
+    text-shadow: 0 0 20px currentColor;
+  }
+}
+
+/* Animation Classes */
+.animate-gradient {
+  background-size: 200% 200%;
+  animation: gradient 3s ease infinite;
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 3s ease-in-out infinite;
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.animate-neon-flicker {
+  animation: neon-flicker 2s ease-in-out infinite;
+}
+
+/* Button Styles */
+.btn-cyber {
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, var(--cyber-blue), var(--cyber-purple));
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  cursor: pointer;
+}
+
+.btn-cyber:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(0, 212, 255, 0.3);
+}
+
+.btn-cyber::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+.btn-cyber:hover::before {
+  left: 100%;
+}
+
+.btn-cyber-outline {
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  border: 2px solid var(--cyber-blue);
+  background: transparent;
+  color: var(--cyber-blue);
+  cursor: pointer;
+}
+
+.btn-cyber-outline:hover {
+  background: var(--cyber-blue);
+  color: white;
+  box-shadow: var(--glow-blue);
+}
+
+/* Card Styles */
+.card-cyber {
+  background: linear-gradient(135deg, 
+    rgba(0, 212, 255, 0.1) 0%, 
+    rgba(157, 78, 221, 0.1) 50%, 
+    rgba(255, 0, 110, 0.1) 100%);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(0, 212, 255, 0.3);
+  border-radius: 1rem;
+  padding: 1.5rem;
+  transition: all 0.3s ease;
+}
+
+.card-cyber:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 40px rgba(0, 212, 255, 0.2);
+}
+
+/* Grid Patterns */
+.grid-pattern {
+  background-image: 
+    linear-gradient(var(--cyber-blue) 1px, transparent 1px),
+    linear-gradient(90deg, var(--cyber-blue) 1px, transparent 1px);
+  background-size: 20px 20px;
+  opacity: 0.1;
+}
+
+.grid-pattern-large {
+  background-image: 
+    linear-gradient(var(--cyber-blue) 1px, transparent 1px),
+    linear-gradient(90deg, var(--cyber-blue) 1px, transparent 1px);
+  background-size: 40px 40px;
+  opacity: 0.05;
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--cyber-dark);
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, var(--cyber-blue), var(--cyber-purple));
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, var(--cyber-purple), var(--cyber-pink));
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .glass, .glass-dark, .glass-cyber {
+    backdrop-filter: blur(10px);
+  }
+  
+  .btn-cyber, .btn-cyber-outline {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+  }
+}
+
+/* Particle Effects */
+.particles {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.particle {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  background: var(--cyber-blue);
+  border-radius: 50%;
+  opacity: 0.6;
+  animation: float 6s ease-in-out infinite;
+}
+
+.particle:nth-child(2n) {
+  background: var(--cyber-purple);
+  animation-delay: -2s;
+}
+
+.particle:nth-child(3n) {
+  background: var(--cyber-pink);
+  animation-delay: -4s;
+}
+
+/* Loading Animations */
+.loading-spinner {
+  border: 2px solid rgba(0, 212, 255, 0.3);
+  border-top: 2px solid var(--cyber-blue);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Progress Bars */
+.progress-bar {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 8px;
+  background: linear-gradient(90deg, var(--cyber-blue), var(--cyber-purple));
+  border-radius: 10px;
+  transition: width 0.3s ease;
+}
+
+/* Status Indicators */
+.status-online {
+  color: var(--cyber-green);
+  text-shadow: 0 0 10px var(--cyber-green);
+}
+
+.status-offline {
+  color: #666;
+}
+
+.status-busy {
+  color: var(--cyber-orange);
+  text-shadow: 0 0 10px var(--cyber-orange);
+}
+
+/* Cyber-specific Background Colors with Opacity */
+.from-cyber-blue\/20 {
+  --tw-gradient-from: rgba(0, 212, 255, 0.2);
+}
+
+.to-cyber-purple\/20 {
+  --tw-gradient-to: rgba(157, 78, 221, 0.2);
+}
+
+.from-cyber-green\/20 {
+  --tw-gradient-from: rgba(0, 255, 136, 0.2);
+}
+
+.to-cyber-blue\/20 {
+  --tw-gradient-to: rgba(0, 212, 255, 0.2);
+}
+
+.from-cyber-orange\/20 {
+  --tw-gradient-from: rgba(255, 133, 0, 0.2);
+}
+
+.to-cyber-pink\/20 {
+  --tw-gradient-to: rgba(255, 0, 110, 0.2);
+}
+
+/* Border Colors with Opacity */
+.border-cyber-blue\/30 {
+  border-color: rgba(0, 212, 255, 0.3);
+}
+
+.border-cyber-green\/30 {
+  border-color: rgba(0, 255, 136, 0.3);
+}
+
+.border-cyber-orange\/30 {
+  border-color: rgba(255, 133, 0, 0.3);
+}
+
+.border-cyber-purple\/40 {
+  border-color: rgba(157, 78, 221, 0.4);
+}
+
+.border-cyber-blue\/40 {
+  border-color: rgba(0, 212, 255, 0.4);
+}
+
+.border-cyber-pink\/40 {
+  border-color: rgba(255, 0, 110, 0.4);
+}
+
+/* Background Colors with Opacity */
+.bg-cyber-blue\/10 {
+  background-color: rgba(0, 212, 255, 0.1);
+}
+
+.bg-cyber-blue\/20 {
+  background-color: rgba(0, 212, 255, 0.2);
+}
+
+.bg-cyber-purple\/20 {
+  background-color: rgba(157, 78, 221, 0.2);
+}
+
+.bg-cyber-green\/20 {
+  background-color: rgba(0, 255, 136, 0.2);
+}
+
+.bg-cyber-orange\/20 {
+  background-color: rgba(255, 133, 0, 0.2);
+}
+
+.bg-cyber-pink\/20 {
+  background-color: rgba(255, 0, 110, 0.2);
+}
+
+/* Shadow Colors with Opacity */
+.shadow-cyber-blue\/20 {
+  --tw-shadow-color: rgba(0, 212, 255, 0.2);
+  --tw-shadow: var(--tw-shadow-colored);
+}
+
+.shadow-cyber-blue\/25 {
+  --tw-shadow-color: rgba(0, 212, 255, 0.25);
+  --tw-shadow: var(--tw-shadow-colored);
+}
