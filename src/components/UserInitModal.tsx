@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { User, Gamepad2 } from 'lucide-react';
+import { User, Terminal, Zap } from 'lucide-react';
 
 interface UserInitModalProps {
   isOpen: boolean;
@@ -15,7 +15,8 @@ const UserInitModal: React.FC<UserInitModalProps> = ({ isOpen, onUserCreate }) =
     if (!username.trim()) return;
     
     setIsSubmitting(true);
-    await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
+    // Simulate API call for creating a user profile
+    await new Promise(resolve => setTimeout(resolve, 1500)); 
     onUserCreate(username.trim());
     setIsSubmitting(false);
   };
@@ -23,74 +24,84 @@ const UserInitModal: React.FC<UserInitModalProps> = ({ isOpen, onUserCreate }) =
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-white/95 backdrop-blur-lg border border-primary/30 rounded-2xl max-w-md w-full p-8 shadow-2xl">
+    <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 transition-opacity duration-300">
+      <div className="relative bg-white/90 backdrop-blur-xl rounded-2xl border border-cyan-200/50 w-full max-w-md p-8 shadow-2xl shadow-cyan-500/10">
+        {/* Header */}
         <div className="text-center mb-8">
-          <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-r from-primary/20 to-secondary/20 backdrop-blur-sm border border-primary/30 flex items-center justify-center">
-            <Gamepad2 className="w-10 h-10 text-primary" />
+          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-r from-cyan-100 to-blue-100 flex items-center justify-center border border-cyan-300/50">
+            <Terminal className="w-8 h-8 text-cyan-600" />
           </div>
-          <h2 className="text-2xl font-bold font-heading text-surface-800 mb-2">
-            Welcome to HackQuest
+          <h2 className="text-3xl font-heading font-bold bg-gradient-to-r from-cyan-600 via-blue-600 to-cyan-800 bg-clip-text text-transparent mb-2">
+            Welcome, Agent
           </h2>
-          <p className="text-surface-600 text-sm">
-            Enter your hacker name to start your cybersecurity journey
+          <p className="text-slate-600">
+            Choose your callsign to begin the mission.
           </p>
         </div>
 
+        {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label className="block text-surface-800 font-semibold mb-2">
-              Choose Your Hacker Name
+            <label className="block text-sm font-medium text-slate-700 mb-2 font-primary">
+              Agent Callsign
             </label>
             <div className="relative">
-              <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-surface-500" />
+              <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
               <input
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                placeholder="Enter your username..."
-                className="w-full pl-10 pr-4 py-3 bg-surface-50 border border-primary/30 rounded-lg text-surface-800 placeholder-surface-500 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                placeholder="e.g., Ghost, Viper, Neo"
+                className="w-full pl-10 pr-4 py-3 bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent text-slate-800 placeholder-slate-400 font-mono transition-all duration-300"
                 maxLength={20}
                 required
               />
             </div>
-            <p className="text-xs text-surface-600 mt-2">
-              Max 20 characters. This will be your display name on the leaderboard.
-            </p>
+             <p className="text-xs text-slate-500 mt-2">
+                Max 20 characters. This will be your legend on the leaderboard.
+             </p>
           </div>
 
           <button
             type="submit"
             disabled={!username.trim() || isSubmitting}
-            className="btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+            className="w-full group relative px-6 py-3 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-lg font-semibold text-white transform hover:scale-105 transition-all duration-300 hover:shadow-lg hover:shadow-cyan-500/25 disabled:opacity-50 disabled:cursor-not-allowed font-heading"
           >
-            {isSubmitting ? (
-              <>
-                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                <span>Creating Profile...</span>
-              </>
-            ) : (
-              <span>Start Hacking</span>
-            )}
+            <span className="relative z-10 flex items-center justify-center">
+              {isSubmitting ? (
+                <>
+                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2"></div>
+                  <span>Initializing Profile...</span>
+                </>
+              ) : (
+                <>
+                  <Zap className="w-5 h-5 mr-2" />
+                  <span>Go Online</span>
+                </>
+              )}
+            </span>
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-cyan-700 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
           </button>
         </form>
 
-        <div className="mt-6 pt-6 border-t border-surface-300">
+        {/* Footer Stats */}
+        <div className="mt-8 pt-6 border-t border-slate-200/80">
           <div className="grid grid-cols-3 gap-4 text-center text-sm">
-            <div className="text-primary">
-              <div className="font-bold">15K+</div>
-              <div className="text-surface-600">Hackers</div>
+            <div>
+              <div className="font-bold text-cyan-600">15K+</div>
+              <div className="text-slate-500 text-xs">Agents Online</div>
             </div>
-            <div className="text-success">
-              <div className="font-bold">50+</div>
-              <div className="text-surface-600">Challenges</div>
+            <div>
+              <div className="font-bold text-cyan-600">50+</div>
+              <div className="text-slate-500 text-xs">Live Challenges</div>
             </div>
-            <div className="text-warning">
-              <div className="font-bold">24/7</div>
-              <div className="text-surface-600">Learning</div>
+            <div>
+              <div className="font-bold text-cyan-600">24/7</div>
+              <div className="text-slate-500 text-xs">Learning Hub</div>
             </div>
           </div>
         </div>
+
       </div>
     </div>
   );

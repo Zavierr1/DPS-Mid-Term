@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, Terminal, CheckCircle, XCircle, Lightbulb, Target, Zap } from 'lucide-react';
 
-interface SQLInjectionChallengeProps {
+interface CryptoChallengeProps {
   isOpen: boolean;
   onClose: () => void;
   onComplete: (score: number) => void;
@@ -12,21 +12,52 @@ interface Challenge {
   question: string;
   hint: string;
   expectedPayload: string;
-  vulnerableCode: string;
+  vulnerableCode: string; // Renamed for consistency, was cryptographicDetails
   explanation: string;
   points: number;
 }
 
-const sqlChallenges: Challenge[] = [
-    { id: 1, question: "The login form is vulnerable. Bypass authentication by injecting SQL that always returns true.", hint: "Try using a condition that's always true, like '1'='1'.", expectedPayload: "' OR '1'='1", vulnerableCode: `SELECT * FROM users WHERE username='$input' AND password='$password'`, explanation: "By injecting ' OR '1'='1, the SQL query becomes: SELECT * FROM users WHERE username='' OR '1'='1' AND password='' which always returns true, granting access.", points: 25 },
-    { id: 2, question: "Extract the database version using a UNION-based attack. The query returns one column.", hint: "Use UNION SELECT to add your own data. Database version can be retrieved with @@VERSION or VERSION().", expectedPayload: "' UNION SELECT @@VERSION--", vulnerableCode: `SELECT name FROM products WHERE id='$input'`, explanation: "UNION SELECT allows you to combine results from different queries. The '--' comments out the rest of the original query, preventing errors.", points: 35 },
-    { id: 3, question: "A search feature is vulnerable. Extract the first table name from the database schema.", hint: "Use information_schema.tables to get table names. Use LIMIT 1 to get the first result.", expectedPayload: "' UNION SELECT table_name FROM information_schema.tables LIMIT 1--", vulnerableCode: `SELECT title, content FROM articles WHERE title LIKE '%$input%'`, explanation: "The information_schema database contains metadata about all tables. This technique helps enumerate the database structure.", points: 45 },
-    { id: 4, question: "Bypass a basic, case-sensitive filter that blocks the 'OR' keyword.", hint: "SQL keywords are not case-sensitive. Try different cases or alternative operators.", expectedPayload: "' or '1'='1", vulnerableCode: `SELECT * FROM users WHERE id='$input' /* Filter blocks: OR */`, explanation: "Many basic filters only check for specific string patterns. Using lowercase 'or' bypasses a case-sensitive filter for 'OR'.", points: 30 },
-    { id: 5, question: "Perform a time-based blind SQL injection. Confirm if the admin's password starts with 'c'.", hint: "Use SLEEP() or BENCHMARK() to create time delays based on a condition.", expectedPayload: "' AND IF(SUBSTRING((SELECT password FROM users WHERE username='admin'),1,1)='c',SLEEP(5),0)--", vulnerableCode: `SELECT id FROM users WHERE email='$input'`, explanation: "Time-based blind injection uses database delay functions to infer information when no direct output is visible. If the page takes longer to load, the condition is true.", points: 55 }
+const cryptoChallenges: Challenge[] = [
+    {
+        id: 1,
+        question: "A message was intercepted: 'KHOOR, ZRUOG!'. It's encrypted with a simple Caesar cipher with a shift of 3. What is the original message?",
+        hint: "In a Caesar cipher, each letter is shifted by a fixed number of places down the alphabet. To decode, you must shift them back. 'A' would become 'X', 'B' would become 'Y', etc.",
+        expectedPayload: "HELLO, WORLD!",
+        vulnerableCode: "Cipher: Caesar | Shift: 3\n\nExample Decryption:\nD -> A\nE -> B\nF -> C",
+        explanation: "Correct! A Caesar cipher is a basic substitution cipher. By shifting each letter back by 3 positions in the alphabet, you successfully decrypted the message.",
+        points: 20
+    },
+    {
+        id: 2,
+        question: "You've found a Base64 encoded string: 'U2VjdXJpdHkgaXMgYW4gaWxsdXNpb24u'. What does it decode to?",
+        hint: "Base64 is an encoding scheme, not an encryption method. Use any standard Base64 decoder to reveal the plaintext.",
+        expectedPayload: "Security is an illusion.",
+        vulnerableCode: "Encoding: Base64\n\nCharacters: A-Z, a-z, 0-9, +, /\nPadding: Uses '=' at the end if needed.",
+        explanation: "Excellent. Base64 is used to represent binary data in an ASCII string format. It's often mistaken for encryption but provides no confidentiality.",
+        points: 25
+    },
+    {
+        id: 3,
+        question: "This MD5 hash 'e80b5017098950fc58aad83c8c14978e' corresponds to a common 4-digit PIN. What is the PIN?",
+        hint: "MD5 is a broken hashing algorithm. Its hashes for simple inputs (like 4-digit PINs) are widely available in pre-computed 'rainbow tables'. Search for this hash online.",
+        expectedPayload: "1337",
+        vulnerableCode: "Algorithm: MD5 (Message Digest 5)\n\nType: Cryptographic Hash Function\nWeakness: Vulnerable to collision and pre-image attacks.",
+        explanation: "Nicely done. This demonstrates why MD5 is insecure for password or PIN storage. Rainbow tables make reversing simple hashes trivial.",
+        points: 35
+    },
+    {
+        id: 4,
+        question: "Crack this Vigenère cipher: 'RIJVS, GPECT!' using the key 'KEY'.",
+        hint: "The Vigenère cipher uses a keyword to shift letters. For the first letter, use 'K' as the shift, for the second use 'E', for the third use 'Y', and then repeat the key.",
+        expectedPayload: "HELLO, AGENT!",
+        vulnerableCode: "Cipher: Vigenère\nKey: 'KEY'\n\nDecryption Formula:\nPi = (Ci - Ki) mod 26",
+        explanation: "Great work! The Vigenère cipher improves on the Caesar cipher by using multiple shift values, but it can be broken once the key length is known.",
+        points: 45
+    },
 ];
 
 
-const SQLInjectionChallenge: React.FC<SQLInjectionChallengeProps> = ({ isOpen, onClose, onComplete }) => {
+const CryptoChallenge: React.FC<CryptoChallengeProps> = ({ isOpen, onClose, onComplete }) => {
   const [currentChallenge, setCurrentChallenge] = useState(0);
   const [userInput, setUserInput] = useState('');
   const [showHint, setShowHint] = useState(false);
@@ -58,12 +89,8 @@ const SQLInjectionChallenge: React.FC<SQLInjectionChallengeProps> = ({ isOpen, o
   const checkAnswer = () => {
     if (!userInput.trim()) return;
 
-    const challenge = sqlChallenges[currentChallenge];
-    // A more robust check for various SQL injection patterns
-    const normalizedUserInput = userInput.trim().replace(/\s+/g, ' ').toLowerCase();
-    const normalizedPayload = challenge.expectedPayload.trim().replace(/\s+/g, ' ').toLowerCase();
-    
-    const isAnswerCorrect = normalizedUserInput.includes(normalizedPayload);
+    const challenge = cryptoChallenges[currentChallenge];
+    const isAnswerCorrect = userInput.trim().toLowerCase() === challenge.expectedPayload.toLowerCase();
     
     setAttempts(prev => prev + 1);
     setIsCorrect(isAnswerCorrect);
@@ -75,7 +102,7 @@ const SQLInjectionChallenge: React.FC<SQLInjectionChallengeProps> = ({ isOpen, o
       setTotalScore(newTotalScore);
 
       setTimeout(() => {
-        if (currentChallenge < sqlChallenges.length - 1) {
+        if (currentChallenge < cryptoChallenges.length - 1) {
           setCurrentChallenge(prev => prev + 1);
           resetForNextChallenge();
         } else {
@@ -94,8 +121,8 @@ const SQLInjectionChallenge: React.FC<SQLInjectionChallengeProps> = ({ isOpen, o
 
   if (!isOpen) return null;
 
-  const challenge = sqlChallenges[currentChallenge];
-  const progressPercentage = ((currentChallenge) / sqlChallenges.length) * 100;
+  const challenge = cryptoChallenges[currentChallenge];
+  const progressPercentage = ((currentChallenge) / cryptoChallenges.length) * 100;
 
   return (
     <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
@@ -105,10 +132,10 @@ const SQLInjectionChallenge: React.FC<SQLInjectionChallengeProps> = ({ isOpen, o
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-2xl font-heading font-bold bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent mb-1">
-                SQL Injection Challenge
+                Cryptography Challenge
               </h2>
               <div className="flex items-center space-x-4 text-sm text-slate-500">
-                <span>Challenge: <span className="font-semibold text-slate-600">{currentChallenge + 1} / {sqlChallenges.length}</span></span>
+                <span>Challenge: <span className="font-semibold text-slate-600">{currentChallenge + 1} / {cryptoChallenges.length}</span></span>
                 <span>Score: <span className="font-semibold text-cyan-600">{totalScore}</span></span>
                 <span>Time: <span className="font-semibold text-slate-600">{formatTime(timeElapsed)}</span></span>
                 <span>Attempts: <span className="font-semibold text-slate-600">{attempts}</span></span>
@@ -146,11 +173,11 @@ const SQLInjectionChallenge: React.FC<SQLInjectionChallengeProps> = ({ isOpen, o
             </div>
           </div>
 
-          {/* Vulnerable Code */}
+          {/* Vulnerable Code / Details */}
           <div>
             <h4 className="text-slate-700 font-semibold mb-2 flex items-center">
               <Terminal className="w-5 h-5 mr-2 text-slate-500" />
-              Vulnerable Code Snippet
+              Cryptographic Details
             </h4>
             <pre className="text-cyan-300 font-mono text-sm bg-slate-800 p-4 rounded-lg overflow-x-auto shadow-inner">
               <code>{challenge.vulnerableCode}</code>
@@ -159,13 +186,13 @@ const SQLInjectionChallenge: React.FC<SQLInjectionChallengeProps> = ({ isOpen, o
 
           {/* Input Field */}
           <div className="space-y-3">
-            <label className="block text-slate-700 font-semibold">Your SQL Injection Payload:</label>
+            <label className="block text-slate-700 font-semibold">Your Decoded Answer:</label>
             <div className="relative">
               <input
                 type="text"
                 value={userInput}
                 onChange={(e) => setUserInput(e.target.value)}
-                placeholder="Enter payload and press Enter..."
+                placeholder="Enter your answer and press Enter..."
                 className="w-full p-4 pl-5 bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent text-slate-800 placeholder-slate-400 font-mono transition-all duration-300"
                 onKeyPress={(e) => e.key === 'Enter' && checkAnswer()}
                 disabled={isCorrect === true}
@@ -182,7 +209,7 @@ const SQLInjectionChallenge: React.FC<SQLInjectionChallengeProps> = ({ isOpen, o
             </div>
           </div>
 
-          {/* Hint */}
+          {/* Hint & Submit */}
           <div className="flex items-center justify-between">
             <button
               onClick={() => setShowHint(!showHint)}
@@ -219,16 +246,16 @@ const SQLInjectionChallenge: React.FC<SQLInjectionChallengeProps> = ({ isOpen, o
             }`}>
               {isCorrect ? (
                 <div>
-                  <p className="font-semibold text-green-700 mb-2">Success! Payload accepted.</p>
+                  <p className="font-semibold text-green-700 mb-2">Success! Answer accepted.</p>
                   <p className="text-slate-600 text-sm">{challenge.explanation}</p>
-                  {currentChallenge < sqlChallenges.length - 1 ? (
+                  {currentChallenge < cryptoChallenges.length - 1 ? (
                     <p className="text-cyan-600 mt-2 font-semibold animate-pulse">Loading next challenge...</p>
                   ) : (
                     <p className="text-green-600 mt-2 font-semibold">All challenges completed! Well done, agent!</p>
                   )}
                 </div>
               ) : (
-                <p className="font-semibold text-red-700">Access Denied. The system rejected your payload. Review your logic and try again.</p>
+                <p className="font-semibold text-red-700">Incorrect. The answer was rejected. Review your logic and try again.</p>
               )}
             </div>
           )}
@@ -238,4 +265,4 @@ const SQLInjectionChallenge: React.FC<SQLInjectionChallengeProps> = ({ isOpen, o
   );
 };
 
-export default SQLInjectionChallenge;
+export default CryptoChallenge;

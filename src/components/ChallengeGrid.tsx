@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { Lock, Clock, Users, Trophy, ChevronRight } from 'lucide-react';
 import SQLInjectionChallenge from './SQLInjectionChallenge';
+import XSSChallenge from './XSSChallenge';
+import CryptoChallenge from './CryptoChallenge';
+import NetworkChallenge from './NetworkChallenge';
 import { useGame } from '../context/GameContext';
 
 interface Challenge {
@@ -16,143 +19,96 @@ interface Challenge {
   completionRate: number;
 }
 
+// Mock data remains the same
 const mockChallenges: Challenge[] = [
-  {
-    id: 1,
-    title: 'SQL Injection Basics',
-    description: 'Learn the fundamentals of SQL injection attacks and how to exploit vulnerable web applications.',
-    difficulty: 'Beginner',
-    category: 'Web Security',
-    points: 100,
-    participants: 2843,
-    timeEstimate: '30 min',
-    isLocked: false,
-    completionRate: 78
-  },
-  {
-    id: 2,
-    title: 'Buffer Overflow Exploitation',
-    description: 'Master the art of buffer overflow attacks and exploit memory corruption vulnerabilities.',
-    difficulty: 'Advanced',
-    category: 'Binary Exploitation',
-    points: 500,
-    participants: 1247,
-    timeEstimate: '2 hrs',
-    isLocked: false,
-    completionRate: 34
-  },
-  {
-    id: 3,
-    title: 'Cryptographic Hash Cracking',
-    description: 'Break various hash algorithms and understand cryptographic weaknesses.',
-    difficulty: 'Intermediate',
-    category: 'Cryptography',
-    points: 250,
-    participants: 1876,
-    timeEstimate: '1 hr',
-    isLocked: false,
-    completionRate: 52
-  },
-  {
-    id: 4,
-    title: 'Advanced Persistent Threat',
-    description: 'Simulate an APT attack chain and maintain persistence in enterprise networks.',
-    difficulty: 'Expert',
-    category: 'Network Security',
-    points: 1000,
-    participants: 456,
-    timeEstimate: '4 hrs',
-    isLocked: true,
-    completionRate: 12
-  },
-  {
-    id: 5,
-    title: 'XSS Attack Vectors',
-    description: 'Explore cross-site scripting vulnerabilities and bypass modern web defenses.',
-    difficulty: 'Intermediate',
-    category: 'Web Security',
-    points: 200,
-    participants: 3241,
-    timeEstimate: '45 min',
-    isLocked: false,
-    completionRate: 65
-  },
-  {
-    id: 6,
-    title: 'Reverse Engineering Malware',
-    description: 'Analyze and reverse engineer sophisticated malware samples.',
-    difficulty: 'Expert',
-    category: 'Malware Analysis',
-    points: 800,
-    participants: 678,
-    timeEstimate: '3 hrs',
-    isLocked: true,
-    completionRate: 23
-  }
+    { id: 1, title: 'SQL Injection Mastery', description: 'Master SQL injection attacks from basic bypasses to advanced techniques including blind injection and WAF bypass.', difficulty: 'Beginner', category: 'Web Security', points: 300, participants: 2843, timeEstimate: '45 min', isLocked: false, completionRate: 78 },
+    { id: 2, title: 'Cross-Site Scripting (XSS)', description: 'Learn to exploit XSS vulnerabilities including reflected, stored, and DOM-based attacks with CSP bypasses.', difficulty: 'Intermediate', category: 'Web Security', points: 250, participants: 1847, timeEstimate: '35 min', isLocked: false, completionRate: 65 },
+    { id: 3, title: 'Cryptography Challenges', description: 'Break classical ciphers, analyze weak implementations, and crack hashes using various cryptanalysis techniques.', difficulty: 'Intermediate', category: 'Cryptography', points: 275, participants: 1247, timeEstimate: '50 min', isLocked: false, completionRate: 42 },
+    { id: 4, title: 'Network Security Fundamentals', description: 'Test your knowledge of network protocols, security concepts, and common attack vectors in network environments.', difficulty: 'Beginner', category: 'Network Security', points: 200, participants: 3156, timeEstimate: '25 min', isLocked: false, completionRate: 71 },
+    { id: 5, title: 'Advanced Penetration Testing', description: 'Combine multiple attack vectors in realistic scenarios. Requires completion of at least 2 other challenges.', difficulty: 'Advanced', category: 'Penetration Testing', points: 500, participants: 567, timeEstimate: '90 min', isLocked: true, completionRate: 23 },
+    { id: 6, title: 'Digital Forensics Investigation', description: 'Analyze digital evidence, recover deleted files, and trace attack patterns in this comprehensive forensics challenge.', difficulty: 'Expert', category: 'Digital Forensics', points: 750, participants: 234, timeEstimate: '2 hrs', isLocked: true, completionRate: 12 }
 ];
+
 
 const ChallengeGrid: React.FC = () => {
   const [filter, setFilter] = useState<string>('All');
   const [showSQLChallenge, setShowSQLChallenge] = useState(false);
+  const [showXSSChallenge, setShowXSSChallenge] = useState(false);
+  const [showCryptoChallenge, setShowCryptoChallenge] = useState(false);
+  const [showNetworkChallenge, setShowNetworkChallenge] = useState(false);
   const { completeChallenge, updateUserScore } = useGame();
 
   const handleChallengeComplete = (score: number) => {
-    completeChallenge('sql-injection', score);
-    updateUserScore('sql-injection', score, 1, 0);
+    completeChallenge('challenge-completed', score);
+    updateUserScore('challenge-completed', score, 1, 0);
   };
 
   const handleChallengeClick = (challenge: Challenge) => {
-    if (challenge.title === 'SQL Injection Basics') {
-      setShowSQLChallenge(true);
-    } else {
-      // Placeholder for other challenges
-      alert(`${challenge.title} challenge coming soon!`);
+    if (challenge.isLocked) {
+      alert('This challenge is locked. Complete other challenges first!');
+      return;
+    }
+
+    switch (challenge.title) {
+      case 'SQL Injection Mastery':
+        setShowSQLChallenge(true);
+        break;
+      case 'Cross-Site Scripting (XSS)':
+        setShowXSSChallenge(true);
+        break;
+      case 'Cryptography Challenges':
+        setShowCryptoChallenge(true);
+        break;
+      case 'Network Security Fundamentals':
+        setShowNetworkChallenge(true);
+        break;
+      default:
+        alert(`${challenge.title} challenge coming soon!`);
     }
   };
 
-  const categories = ['All', 'Web Security', 'Binary Exploitation', 'Cryptography', 'Network Security', 'Malware Analysis'];
-  
+  const categories = ['All', 'Web Security', 'Cryptography', 'Network Security', 'Penetration Testing', 'Digital Forensics'];
+
   const difficultyColors = {
-    'Beginner': 'from-green-500 to-cyan-500',
-    'Intermediate': 'from-cyan-500 to-blue-500',
-    'Advanced': 'from-blue-500 to-purple-500',
-    'Expert': 'from-purple-500 to-pink-500'
+    'Beginner': 'bg-cyan-500/10 text-cyan-600 border-cyan-500/20',
+    'Intermediate': 'bg-amber-500/10 text-amber-600 border-amber-500/20',
+    'Advanced': 'bg-red-500/10 text-red-600 border-red-500/20',
+    'Expert': 'bg-indigo-500/10 text-indigo-600 border-indigo-500/20'
   };
 
-  const filteredChallenges = mockChallenges.filter(challenge => 
+  const filteredChallenges = mockChallenges.filter(challenge =>
     filter === 'All' || challenge.category === filter
   );
 
   return (
-    <section id="challenges" className="py-20 bg-secondary relative overflow-hidden">
-      {/* Background Pattern */}
-      <div className="absolute inset-0 opacity-5">
-        <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width=%2240%22 height=%2240%22 viewBox=%220 0 40 40%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cg fill=%22%2300B4D8%22 fill-opacity=%221%22%3E%3Cpath d=%22M20 20h20v20H20V20zm-20 0h20v20H0V20z%22/%3E%3C/g%3E%3C/svg%3E')]"></div>
-      </div>
+    <section id="challenges" className="relative py-20 overflow-hidden min-h-screen bg-gradient-to-br from-white via-slate-50 to-cyan-50">
+        {/* Animated Background from Login Page */}
+        <div className="absolute inset-0 z-0">
+            <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width=%2260%22 height=%2260%22 viewBox=%220 0 60 60%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cg fill=%22none%22 fill-rule=%22evenodd%22%3E%3Cg fill=%22%2300CED1%22 fill-opacity=%220.05%22%3E%3Cpath d=%22M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z%22/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-30"></div>
+        </div>
 
       <div className="container mx-auto px-6 relative z-10">
-        {/* Section Header */}
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-heading font-bold mb-6">
-            <span className="gradient-text">
+            <span className="bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent">
               Cybersecurity Challenges
             </span>
           </h2>
-          <p className="text-xl text-secondary max-w-2xl mx-auto font-primary">
-            Test your skills against real-world scenarios and climb the leaderboard
+          <p className="text-xl text-slate-600 max-w-3xl mx-auto">
+            Test your skills across multiple domains of cybersecurity. From web application vulnerabilities to cryptographic challenges.
           </p>
         </div>
 
-        {/* Filters */}
-        <div className="flex flex-wrap justify-center gap-4 mb-12">
+        {/* Category Filter */}
+        <div className="flex flex-wrap justify-center gap-3 mb-12">
           {categories.map((category) => (
             <button
               key={category}
               onClick={() => setFilter(category)}
-              className={`px-6 py-3 rounded-lg font-semibold transition-all duration-300 ${
+              className={`px-6 py-3 rounded-xl font-semibold transition-all duration-300 border-2 ${
                 filter === category
-                  ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-lg'
-                  : 'glass text-secondary hover:bg-glass backdrop-blur-sm border'
+                  ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-lg shadow-cyan-500/25 border-transparent transform scale-105'
+                  : 'bg-white/70 backdrop-blur-sm text-slate-700 hover:bg-cyan-500/10 hover:text-cyan-600 border-slate-200 hover:border-cyan-400/50 hover:shadow-md'
               }`}
             >
               {category}
@@ -165,87 +121,92 @@ const ChallengeGrid: React.FC = () => {
           {filteredChallenges.map((challenge) => (
             <div
               key={challenge.id}
-              className="group relative card hover-lift hover-scale transition-all"
+              onClick={() => handleChallengeClick(challenge)}
+              className={`group relative overflow-hidden bg-white/80 backdrop-blur-lg rounded-2xl border border-cyan-200/50 shadow-lg shadow-cyan-500/10 transition-all duration-300
+              ${
+                challenge.isLocked 
+                ? 'opacity-60 grayscale cursor-not-allowed' 
+                : 'hover:cursor-pointer hover:shadow-2xl hover:shadow-cyan-500/20 hover:-translate-y-2'
+              }`}
             >
-              {/* Lock Overlay */}
               {challenge.isLocked && (
-                <div className="absolute inset-0 bg-black/60 backdrop-blur-sm rounded-xl flex items-center justify-center z-10">
-                  <div className="text-center">
-                    <Lock className="w-12 h-12 text-warning mx-auto mb-2" />
-                    <p className="text-warning font-semibold">Complete Prerequisites</p>
-                  </div>
+                <div className="absolute top-4 right-4 z-10 bg-slate-100/50 rounded-full p-2">
+                  <Lock className="w-5 h-5 text-slate-500" />
                 </div>
               )}
 
-              {/* Difficulty Badge */}
-              <div className={`absolute top-4 right-4 px-3 py-1 rounded-full bg-gradient-to-r ${difficultyColors[challenge.difficulty]} text-white text-sm font-semibold`}>
-                {challenge.difficulty}
+              <div className="p-6">
+                {/* Header */}
+                <div className="flex items-start justify-between mb-4">
+                  <div>
+                    <h3 className="text-xl font-heading font-bold text-slate-800 mb-2 group-hover:text-cyan-600 transition-colors">
+                      {challenge.title}
+                    </h3>
+                    <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold border ${difficultyColors[challenge.difficulty]}`}>
+                      {challenge.difficulty}
+                    </span>
+                  </div>
+                  <div className="text-right">
+                    <div className="flex items-center text-amber-500">
+                      <Trophy className="w-4 h-4 mr-1" />
+                      <span className="font-bold">{challenge.points}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Description */}
+                <p className="text-slate-600 text-sm mb-6 leading-relaxed">
+                  {challenge.description}
+                </p>
+
+                {/* Stats */}
+                <div className="flex items-center justify-between text-slate-500 border-t border-b border-slate-200/80 py-3 mb-6">
+                  <div className="flex items-center gap-2">
+                    <Users className="w-4 h-4 text-cyan-600" />
+                    <span className="text-xs font-medium">{challenge.participants.toLocaleString()} Agents</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Clock className="w-4 h-4 text-cyan-600" />
+                    <span className="text-xs font-medium">{challenge.timeEstimate}</span>
+                  </div>
+                </div>
+
+
+                {/* Progress Bar & Success Rate */}
+                <div className="mb-4">
+                    <div className="flex justify-between items-center mb-1">
+                        <span className="text-xs font-semibold text-cyan-700">Success Rate</span>
+                        <span className="text-xs font-bold text-slate-600">{challenge.completionRate}%</span>
+                    </div>
+                    <div className="w-full bg-slate-200 rounded-full h-2">
+                        <div 
+                        className="bg-gradient-to-r from-cyan-500 to-blue-500 h-2 rounded-full transition-all duration-500"
+                        style={{ width: `${challenge.completionRate}%` }}
+                        ></div>
+                    </div>
+                </div>
+
+
+                {/* Action */}
+                <div className="flex items-center justify-between mt-6 pt-4 border-t border-slate-200/80">
+                  <span className="text-sm text-slate-500">{challenge.category}</span>
+                  <div className="flex items-center text-cyan-600 group-hover:translate-x-1 transition-transform">
+                    <span className="text-sm font-semibold mr-1">
+                      {challenge.isLocked ? 'Locked' : 'Start Challenge'}
+                    </span>
+                    <ChevronRight className="w-4 h-4" />
+                  </div>
+                </div>
               </div>
-
-              {/* Category */}
-              <div className="text-primary-color text-sm font-semibold mb-2 font-primary">
-                {challenge.category}
-              </div>
-
-              {/* Title */}
-              <h3 className="text-xl font-bold text-primary mb-3 font-heading group-hover:text-primary-color transition-colors">
-                {challenge.title}
-              </h3>
-
-              {/* Description */}
-              <p className="text-secondary mb-6 text-sm leading-relaxed font-primary">
-                {challenge.description}
-              </p>
-
-              {/* Stats */}
-              <div className="flex items-center justify-between mb-6 text-sm text-tertiary">
-                <div className="flex items-center space-x-1">
-                  <Trophy className="w-4 h-4 text-warning" />
-                  <span>{challenge.points} pts</span>
-                </div>
-                <div className="flex items-center space-x-1">
-                  <Users className="w-4 h-4 text-primary-color" />
-                  <span>{challenge.participants.toLocaleString()}</span>
-                </div>
-                <div className="flex items-center space-x-1">
-                  <Clock className="w-4 h-4 text-success" />
-                  <span>{challenge.timeEstimate}</span>
-                </div>
-              </div>
-
-              {/* Progress Bar */}
-              <div className="mb-6">
-                <div className="flex justify-between text-sm text-tertiary mb-2">
-                  <span>Completion Rate</span>
-                  <span>{challenge.completionRate}%</span>
-                </div>
-                <div className="w-full bg-tertiary rounded-full h-2">
-                  <div 
-                    className="bg-gradient-to-r from-success to-primary-color h-2 rounded-full transition-all duration-500"
-                    style={{ width: `${challenge.completionRate}%` }}
-                  ></div>
-                </div>
-              </div>
-
-              {/* Action Button */}
-              <button 
-                onClick={() => handleChallengeClick(challenge)}
-                disabled={challenge.isLocked}
-                className="w-full py-3 glass border border-primary-color rounded-lg text-primary-color font-semibold hover:bg-primary-color hover:text-inverse transition-all duration-300 flex items-center justify-center space-x-2 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <span>{challenge.isLocked ? 'Locked' : 'Start Challenge'}</span>
-                {!challenge.isLocked && <ChevronRight className="w-4 h-4" />}
-              </button>
             </div>
           ))}
         </div>
 
-        {/* SQL Injection Challenge Modal */}
-        <SQLInjectionChallenge
-          isOpen={showSQLChallenge}
-          onClose={() => setShowSQLChallenge(false)}
-          onComplete={handleChallengeComplete}
-        />
+        {/* Challenge Modals */}
+            <SQLInjectionChallenge isOpen={showSQLChallenge} onClose={() => setShowSQLChallenge(false)} onComplete={handleChallengeComplete} />
+            <XSSChallenge isOpen={showXSSChallenge} onClose={() => setShowXSSChallenge(false)} onComplete={handleChallengeComplete} />
+            <CryptoChallenge isOpen={showCryptoChallenge} onClose={() => setShowCryptoChallenge(false)} onComplete={handleChallengeComplete} />
+            <NetworkChallenge isOpen={showNetworkChallenge} onClose={() => setShowNetworkChallenge(false)} onComplete={handleChallengeComplete} />
       </div>
     </section>
   );

@@ -130,7 +130,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                     name="username"
                     value={formData.username}
                     onChange={handleInputChange}
-                    className="w-full pl-10 pr-4 py-3 bg-slate-50/80 border border-slate-300 rounded-lg focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 text-slate-800 placeholder-slate-400 font-mono transition-all duration-300"
+                    className="w-full pl-10 pr-4 py-3 bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent text-slate-800 placeholder-slate-400 font-mono transition-all duration-300"
                     placeholder={isLogin ? "agent_001 or agent@hackquest.com" : "Choose your agent ID"}
                     required
                   />
@@ -150,7 +150,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                       name="email"
                       value={formData.email}
                       onChange={handleInputChange}
-                      className="w-full pl-10 pr-4 py-3 bg-slate-50/80 border border-slate-300 rounded-lg focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 text-slate-800 placeholder-slate-400 font-mono transition-all duration-300"
+                      className="w-full pl-10 pr-4 py-3 bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent text-slate-800 placeholder-slate-400 font-mono transition-all duration-300"
                       placeholder="agent@hackquest.com"
                       required
                     />
@@ -170,7 +170,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                     name="password"
                     value={formData.password}
                     onChange={handleInputChange}
-                    className="w-full pl-10 pr-12 py-3 bg-slate-50/80 border border-slate-300 rounded-lg focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 text-slate-800 placeholder-slate-400 font-mono transition-all duration-300"
+                    className="w-full pl-10 pr-12 py-3 bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent text-slate-800 placeholder-slate-400 font-mono transition-all duration-300"
                     placeholder="Enter your security key"
                     required
                   />
@@ -197,7 +197,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                       name="confirmPassword"
                       value={formData.confirmPassword}
                       onChange={handleInputChange}
-                      className="w-full pl-10 pr-4 py-3 bg-slate-50/80 border border-slate-300 rounded-lg focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 text-slate-800 placeholder-slate-400 font-mono transition-all duration-300"
+                      className="w-full pl-10 pr-4 py-3 bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent text-slate-800 placeholder-slate-400 font-mono transition-all duration-300"
                       placeholder="Confirm your security key"
                       required
                     />
