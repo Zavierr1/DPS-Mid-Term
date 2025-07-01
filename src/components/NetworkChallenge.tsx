@@ -88,6 +88,36 @@ const NetworkChallenge: React.FC<NetworkChallengeProps> = ({ isOpen, onClose, on
     }
   }, [isOpen]);
 
+  // Lock body scroll when challenge is open
+  useEffect(() => {
+    if (isOpen) {
+      // Save current scroll position
+      const scrollY = window.scrollY;
+      document.body.style.position = 'fixed';
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.width = '100%';
+      document.body.style.overflow = 'hidden';
+    } else {
+      // Restore scroll position
+      const scrollY = document.body.style.top;
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.width = '';
+      document.body.style.overflow = '';
+      if (scrollY) {
+        window.scrollTo(0, parseInt(scrollY || '0') * -1);
+      }
+    }
+
+    // Cleanup function to restore scroll on unmount
+    return () => {
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.width = '';
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
+
   const resetForNextChallenge = () => {
     setUserInput('');
     setIsCorrect(null);
@@ -136,8 +166,8 @@ const NetworkChallenge: React.FC<NetworkChallengeProps> = ({ isOpen, onClose, on
   const progressPercentage = ((currentChallenge) / networkChallenges.length) * 100;
 
   return (
-    <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="relative bg-white/90 backdrop-blur-xl rounded-2xl border border-cyan-200/50 w-full max-w-4xl max-h-[90vh] flex flex-col shadow-2xl shadow-cyan-500/10">
+    <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-hidden">
+      <div className="relative bg-white/90 backdrop-blur-xl rounded-2xl border border-cyan-200/50 w-full max-w-4xl max-h-[90vh] flex flex-col shadow-2xl shadow-cyan-500/10 overflow-hidden">
         {/* Header */}
         <div className="p-6 border-b border-cyan-200/50 flex-shrink-0">
           <div className="flex items-center justify-between">
