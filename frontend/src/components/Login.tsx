@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Eye, EyeOff, Shield, Lock, User, Terminal, Zap } from 'lucide-react';
+import supabase from '../../config/supabaseClient';
 
 interface LoginProps {
   onLogin?: () => void;
@@ -62,17 +63,41 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
     e.preventDefault();
     setIsLoading(true);
     
-    // Simulate authentication process
-    setTimeout(() => {
-      setIsLoading(false);
-      // Here you would handle actual Firebase authentication
-      console.log('Authentication attempted:', formData);
-      
-      // Call the onLogin callback to redirect to main app
-      if (onLogin) {
-        onLogin();
+    try {
+      if (isLogin) {
+        // Handle login
+        const { error } = await supabase.auth.signInWithPassword({
+          email: formData.username,
+          password: formData.password
+        });
+
+        if (error) throw error;
+      } else {
+        // Handle registration
+        if (formData.password !== formData.confirmPassword) {
+          throw new Error('Passwords do not match');
+        }
+
+        const { data, error } = await supabase.auth.signUp({
+          email: formData.email,
+          password: formData.password,
+          options: {
+            data: {
+              username: formData.username
+            }
+          }
+        });
+
+        if (error) throw error;
       }
-    }, 2000);
+
+      if (onLogin) onLogin();
+    } catch (error) {
+      console.error('Authentication error:', error);
+      alert(error instanceof Error ? error.message : 'Authentication failed');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
