@@ -44,7 +44,7 @@ const HeroSection: React.FC = () => {
           {/* Main Title */}
           <h1 className="text-5xl md:text-7xl font-heading font-bold mb-6 leading-tight">
             <span className="bg-gradient-to-r from-cyan-600 via-blue-600 to-cyan-800 bg-clip-text text-transparent animate-gradient">
-              HackQuest
+              HackGoon
             </span>
           </h1>
           
@@ -74,7 +74,7 @@ const HeroSection: React.FC = () => {
               <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-r from-cyan-100 to-blue-100 backdrop-blur-sm border border-cyan-300 flex items-center justify-center">
                 <Target className="w-8 h-8 text-cyan-600" />
               </div>
-              <div className="text-2xl font-bold text-slate-800 font-heading">500+</div>
+              <div className="text-2xl font-bold text-slate-800 font-heading">4</div>
               <div className="text-slate-600 font-primary">Challenges</div>
             </div>
 
@@ -82,7 +82,7 @@ const HeroSection: React.FC = () => {
               <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-r from-teal-100 to-cyan-100 backdrop-blur-sm border border-teal-300 flex items-center justify-center">
                 <Code className="w-8 h-8 text-teal-600" />
               </div>
-              <div className="text-2xl font-bold text-slate-800 font-heading">50K+</div>
+              <div className="text-2xl font-bold text-slate-800 font-heading">1</div>
               <div className="text-slate-600 font-primary">Hackers</div>
             </div>
 

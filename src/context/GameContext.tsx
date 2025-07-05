@@ -35,100 +35,39 @@ interface GameContextType {
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
 
-// Mock data for demonstration
-const mockUsers: User[] = [
-  {
-    id: '1',
-    username: 'CyberNinja',
-    totalScore: 15420,
-    rank: 1,
-    completedChallenges: ['sql-injection', 'buffer-overflow', 'crypto-hash'],
-    streak: 47,
-    country: 'US',
-    avatar: 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop',
-    joinDate: '2024-01-15',
-    lastActive: new Date().toISOString(),
-    badges: ['Elite Hacker', 'Speed Demon', 'First Blood']
-  },
-  {
-    id: '2',
-    username: 'QuantumBreaker',
-    totalScore: 14850,
-    rank: 2,
-    completedChallenges: ['crypto-hash', 'network-analysis'],
-    streak: 32,
-    country: 'DE',
-    avatar: 'https://images.pexels.com/photos/614810/pexels-photo-614810.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop',
-    joinDate: '2024-02-08',
-    lastActive: new Date(Date.now() - 3600000).toISOString(),
-    badges: ['Crypto Master', 'Persistent']
-  },
-  {
-    id: '3',
-    username: 'BinaryWitch',
-    totalScore: 14230,
-    rank: 3,
-    completedChallenges: ['buffer-overflow', 'reverse-engineering'],
-    streak: 28,
-    country: 'JP',
-    avatar: 'https://images.pexels.com/photos/733872/pexels-photo-733872.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop',
-    joinDate: '2024-01-22',
-    lastActive: new Date(Date.now() - 7200000).toISOString(),
-    badges: ['Exploit Expert', 'Binary Master']
-  },
-  {
-    id: '4',
-    username: 'DataViper',
-    totalScore: 13680,
-    rank: 4,
-    completedChallenges: ['sql-injection', 'web-security'],
-    streak: 21,
-    country: 'CA',
-    avatar: 'https://images.pexels.com/photos/697509/pexels-photo-697509.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop',
-    joinDate: '2024-03-01',
-    lastActive: new Date(Date.now() - 14400000).toISOString(),
-    badges: ['Web Warrior', 'SQL Slayer']
-  },
-  {
-    id: '5',
-    username: 'CryptoPunk',
-    totalScore: 13120,
-    rank: 5,
-    completedChallenges: ['crypto-hash'],
-    streak: 19,
-    country: 'GB',
-    avatar: 'https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop',
-    joinDate: '2024-02-14',
-    lastActive: new Date(Date.now() - 21600000).toISOString(),
-    badges: ['Hash Hunter', 'Crypto Enthusiast']
-  }
-];
+// Helper function to get all registered users from localStorage
+const getAllRegisteredUsers = (): User[] => {
+  const registeredUsers = localStorage.getItem('hackquest-all-users');
+  return registeredUsers ? JSON.parse(registeredUsers) : [];
+};
+
+// Helper function to save all registered users to localStorage
+const saveAllRegisteredUsers = (users: User[]) => {
+  localStorage.setItem('hackquest-all-users', JSON.stringify(users));
+};
 
 export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [leaderboard, setLeaderboard] = useState<User[]>(mockUsers);
+  const [leaderboard, setLeaderboard] = useState<User[]>([]);
   const [userProgress, setUserProgress] = useState<UserProgress[]>([]);
 
-  // Initialize user from localStorage or create new
+  // Initialize leaderboard and user from localStorage
   useEffect(() => {
+    // Load all registered users for leaderboard
+    const allUsers = getAllRegisteredUsers();
+    const sortedUsers = allUsers
+      .sort((a, b) => b.totalScore - a.totalScore)
+      .map((user, index) => ({ ...user, rank: index + 1 }));
+    setLeaderboard(sortedUsers);
+
+    // Load current user
     const savedUser = localStorage.getItem('hackquest-user');
     if (savedUser) {
       const user = JSON.parse(savedUser);
       setCurrentUser(user);
-      
-      // Update leaderboard with saved user if not already present
-      setLeaderboard(prev => {
-        const exists = prev.find(u => u.id === user.id);
-        if (!exists) {
-          return [...prev, user].sort((a, b) => b.totalScore - a.totalScore).map((u, index) => ({
-            ...u,
-            rank: index + 1
-          }));
-        }
-        return prev;
-      });
     }
 
+    // Load user progress
     const savedProgress = localStorage.getItem('hackquest-progress');
     if (savedProgress) {
       setUserProgress(JSON.parse(savedProgress));
@@ -152,6 +91,17 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
     setCurrentUser(newUser);
     localStorage.setItem('hackquest-user', JSON.stringify(newUser));
+
+    // Add user to the global users list
+    const allUsers = getAllRegisteredUsers();
+    const updatedUsers = [...allUsers, newUser];
+    saveAllRegisteredUsers(updatedUsers);
+
+    // Update leaderboard
+    const sortedUsers = updatedUsers
+      .sort((a, b) => b.totalScore - a.totalScore)
+      .map((user, index) => ({ ...user, rank: index + 1 }));
+    setLeaderboard(sortedUsers);
   };
 
   const updateUserScore = (challengeId: string, score: number, attempts: number, timeSpent: number) => {
@@ -187,20 +137,18 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setCurrentUser(updatedUser);
     localStorage.setItem('hackquest-user', JSON.stringify(updatedUser));
 
-    // Update leaderboard
-    setLeaderboard(prev => {
-      const updated = prev.map(user => 
-        user.id === updatedUser.id ? updatedUser : user
-      );
-      
-      if (!updated.find(u => u.id === updatedUser.id)) {
-        updated.push(updatedUser);
-      }
+    // Update user in global users list
+    const allUsers = getAllRegisteredUsers();
+    const updatedUsers = allUsers.map(user => 
+      user.id === updatedUser.id ? updatedUser : user
+    );
+    saveAllRegisteredUsers(updatedUsers);
 
-      return updated
-        .sort((a, b) => b.totalScore - a.totalScore)
-        .map((user, index) => ({ ...user, rank: index + 1 }));
-    });
+    // Update leaderboard
+    const sortedUsers = updatedUsers
+      .sort((a, b) => b.totalScore - a.totalScore)
+      .map((user, index) => ({ ...user, rank: index + 1 }));
+    setLeaderboard(sortedUsers);
   };
 
   const getBadgesForScore = (score: number): string[] => {
@@ -213,13 +161,18 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   const refreshLeaderboard = () => {
-    // Simulate real-time updates
-    setLeaderboard(prev => 
-      prev.map(user => ({
-        ...user,
-        lastActive: Math.random() > 0.7 ? new Date().toISOString() : user.lastActive
-      }))
-    );
+    // Refresh from localStorage and simulate real-time updates
+    const allUsers = getAllRegisteredUsers();
+    const updatedUsers = allUsers.map(user => ({
+      ...user,
+      lastActive: Math.random() > 0.7 ? new Date().toISOString() : user.lastActive
+    }));
+    
+    const sortedUsers = updatedUsers
+      .sort((a, b) => b.totalScore - a.totalScore)
+      .map((user, index) => ({ ...user, rank: index + 1 }));
+    
+    setLeaderboard(sortedUsers);
   };
 
   return (
