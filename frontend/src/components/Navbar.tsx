@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Shield, Menu, X, Trophy, User } from 'lucide-react';
+import { Shield, Menu, X, LogOut } from 'lucide-react';
 
-const Navbar: React.FC = () => {
+interface NavbarProps {
+  onLogout?: () => void;
+}
+
+const Navbar: React.FC<NavbarProps> = ({ onLogout }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
 
@@ -12,6 +16,19 @@ const Navbar: React.FC = () => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  const handleLogout = () => {
+    if (onLogout) {
+      onLogout();
+    }
+  };
+
+  const handleReset = () => {
+    if (window.confirm('Are you sure you want to reset all data? This will log you out and delete all users, progress, and leaderboard data.')) {
+      localStorage.clear();
+      window.location.reload();
+    }
+  };
 
   return (
     <header 
@@ -36,19 +53,26 @@ const Navbar: React.FC = () => {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
-            <a href="#challenges" className="text-slate-600 hover:text-cyan-600 transition-colors font-primary">
-              Challenges
-            </a>
-            <a href="#leaderboard" className="text-slate-600 hover:text-cyan-600 transition-colors font-primary">
-              Leaderboard
-            </a>
             <div className="flex items-center space-x-4">
-              <button className="p-2 text-slate-600 hover:text-cyan-600 transition-colors">
-                <Trophy className="w-5 h-5" />
+              {/* Reset Database Button */}
+              <button
+                onClick={handleReset}
+                className="px-3 py-2 font-semibold text-red-600 hover:text-white border border-red-600 hover:bg-red-600 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-400"
+                style={{ minWidth: 0 }}
+                title="Reset all app data (for testing)"
+              >
+                Reset Database
+
               </button>
-              <button className="p-2 text-slate-600 hover:text-cyan-600 transition-colors">
-                <User className="w-5 h-5" />
-              </button>
+              {onLogout && (
+                <button 
+                  onClick={handleLogout}
+                  className="p-2 text-slate-600 hover:text-red-600 transition-colors"
+                  title="Logout"
+                >
+                  <LogOut className="w-5 h-5" />
+                </button>
+              )}
             </div>
           </nav>
 
@@ -65,19 +89,25 @@ const Navbar: React.FC = () => {
         {isMenuOpen && (
           <div className="md:hidden absolute top-full left-0 right-0 bg-white/95 backdrop-blur-md border-b border-cyan-200/50 shadow-lg">
             <nav className="container mx-auto px-6 py-4 space-y-4">
-              <a href="#challenges" className="block text-slate-600 hover:text-cyan-600 transition-colors font-primary">
-                Challenges
-              </a>
-              <a href="#leaderboard" className="block text-slate-600 hover:text-cyan-600 transition-colors font-primary">
-                Leaderboard
-              </a>
-              <div className="flex items-center space-x-4 pt-4 border-t border-cyan-200/50">
-                <button className="p-2 text-slate-600 hover:text-cyan-600 transition-colors">
-                  <Trophy className="w-5 h-5" />
+              <div className="flex items-center space-x-4 pt-4 border-t border-cyan-200/50 justify-end">
+                {/* Reset Database Button (Mobile) */}
+                <button
+                  onClick={handleReset}
+                  className="px-3 py-2 font-semibold text-red-600 hover:text-white border border-red-600 hover:bg-red-600 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-400"
+                  style={{ minWidth: 0 }}
+                  title="Reset all app data (for testing)"
+                >
+                  Reset Database
                 </button>
-                <button className="p-2 text-slate-600 hover:text-cyan-600 transition-colors">
-                  <User className="w-5 h-5" />
-                </button>
+                {onLogout && (
+                  <button 
+                    onClick={handleLogout}
+                    className="p-2 text-slate-600 hover:text-red-600 transition-colors"
+                    title="Logout"
+                  >
+                    <LogOut className="w-5 h-5" />
+                  </button>
+                )}
               </div>
             </nav>
           </div>

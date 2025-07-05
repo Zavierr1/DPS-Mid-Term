@@ -1,9 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Eye, EyeOff, Shield, Lock, User, Terminal, Zap } from 'lucide-react';
-import supabase from '../../config/supabaseClient';
 
 interface LoginProps {
   onLogin?: () => void;
+}
+
+interface UserData {
+  username: string;
+  password: string;
+  createdAt: string;
 }
 
 const Login: React.FC<LoginProps> = ({ onLogin }) => {
@@ -11,7 +16,6 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     username: '',
-    email: '',
     password: '',
     confirmPassword: ''
   });
@@ -59,6 +63,31 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
     });
   };
 
+  // Helper functions for local authentication
+  const getUsers = (): UserData[] => {
+    const users = localStorage.getItem('hackquest-users');
+    return users ? JSON.parse(users) : [];
+  };
+
+  const saveUser = (userData: UserData) => {
+    const users = getUsers();
+    const existingUserIndex = users.findIndex(u => u.username === userData.username);
+    
+    if (existingUserIndex >= 0) {
+      users[existingUserIndex] = userData;
+    } else {
+      users.push(userData);
+    }
+    
+    localStorage.setItem('hackquest-users', JSON.stringify(users));
+  };
+
+  const authenticateUser = (username: string, password: string): boolean => {
+    const users = getUsers();
+    const user = users.find(u => u.username === username && u.password === password);
+    return !!user;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -66,32 +95,52 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
     try {
       if (isLogin) {
         // Handle login
-        const { error } = await supabase.auth.signInWithPassword({
-          email: formData.username,
-          password: formData.password
-        });
-
-        if (error) throw error;
+        if (authenticateUser(formData.username, formData.password)) {
+          // Store current user session
+          localStorage.setItem('hackquest-current-user', formData.username);
+          if (onLogin) onLogin();
+        } else {
+          throw new Error('Invalid username or password');
+        }
       } else {
         // Handle registration
         if (formData.password !== formData.confirmPassword) {
           throw new Error('Passwords do not match');
         }
 
-        const { data, error } = await supabase.auth.signUp({
-          email: formData.email,
+        if (formData.username.length < 3) {
+          throw new Error('Username must be at least 3 characters long');
+        }
+
+        const users = getUsers();
+        const existingUser = users.find(u => u.username === formData.username);
+        
+        if (existingUser) {
+          throw new Error('Username already exists');
+        }
+
+        // Create new user
+        const newUser: UserData = {
+          username: formData.username,
           password: formData.password,
-          options: {
-            data: {
-              username: formData.username
-            }
-          }
+          createdAt: new Date().toISOString()
+        };
+
+        saveUser(newUser);
+        
+        // Store current user session
+        localStorage.setItem('hackquest-current-user', formData.username);
+        
+        // Switch to login mode and show success message
+        setIsLogin(true);
+        setFormData({
+          username: formData.username,
+          password: '',
+          confirmPassword: ''
         });
-
-        if (error) throw error;
+        
+        if (onLogin) onLogin();
       }
-
-      if (onLogin) onLogin();
     } catch (error) {
       console.error('Authentication error:', error);
       alert(error instanceof Error ? error.message : 'Authentication failed');
@@ -143,10 +192,10 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
 
             {/* Form */}
             <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Username/Email Field */}
+              {/* Username Field */}
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2 font-primary">
-                  {isLogin ? 'Agent ID / Email' : 'Agent ID'}
+                  Agent ID
                 </label>
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
@@ -156,32 +205,11 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                     value={formData.username}
                     onChange={handleInputChange}
                     className="w-full pl-10 pr-4 py-3 bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent text-slate-800 placeholder-slate-400 font-mono transition-all duration-300"
-                    placeholder={isLogin ? "agent_001 or agent@hackquest.com" : "Choose your agent ID"}
+                    placeholder={isLogin ? "Enter your agent ID" : "Choose your agent ID"}
                     required
                   />
                 </div>
               </div>
-
-              {/* Email Field (Registration only) */}
-              {!isLogin && (
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2 font-primary">
-                    Email Address
-                  </label>
-                  <div className="relative">
-                    <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
-                    <input
-                      type="email"
-                      name="email"
-                      value={formData.email}
-                      onChange={handleInputChange}
-                      className="w-full pl-10 pr-4 py-3 bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent text-slate-800 placeholder-slate-400 font-mono transition-all duration-300"
-                      placeholder="agent@hackquest.com"
-                      required
-                    />
-                  </div>
-                </div>
-              )}
 
               {/* Password Field */}
               <div>

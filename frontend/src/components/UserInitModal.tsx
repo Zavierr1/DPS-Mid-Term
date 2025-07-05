@@ -6,19 +6,56 @@ interface UserInitModalProps {
   onUserCreate: (username: string) => void;
 }
 
+interface UserData {
+  username: string;
+  password: string;
+  createdAt: string;
+}
+
+const DEFAULT_PASSWORD = '123456';
+
 const UserInitModal: React.FC<UserInitModalProps> = ({ isOpen, onUserCreate }) => {
   const [username, setUsername] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Helper functions for local authentication
+  const getUsers = (): UserData[] => {
+    const users = localStorage.getItem('hackquest-users');
+    return users ? JSON.parse(users) : [];
+  };
+
+  const saveUser = (userData: UserData) => {
+    const users = getUsers();
+    const existingUserIndex = users.findIndex(u => u.username === userData.username);
+    if (existingUserIndex >= 0) {
+      users[existingUserIndex] = userData;
+    } else {
+      users.push(userData);
+    }
+    localStorage.setItem('hackquest-users', JSON.stringify(users));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!username.trim()) return;
-    
     setIsSubmitting(true);
-    // Simulate API call for creating a user profile
-    await new Promise(resolve => setTimeout(resolve, 1500)); 
-    onUserCreate(username.trim());
-    setIsSubmitting(false);
+    try {
+      // Add user to hackquest-users with default password
+      const newUser: UserData = {
+        username: username.trim(),
+        password: DEFAULT_PASSWORD,
+        createdAt: new Date().toISOString()
+      };
+      saveUser(newUser);
+      // Store the username in localStorage for the current session
+      localStorage.setItem('hackquest-current-user', username.trim());
+      // Call the parent handler to initialize the user
+      onUserCreate(username.trim());
+    } catch (error) {
+      console.error('Error initializing user:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (!isOpen) return null;
@@ -58,7 +95,8 @@ const UserInitModal: React.FC<UserInitModalProps> = ({ isOpen, onUserCreate }) =
               />
             </div>
              <p className="text-xs text-slate-500 mt-2">
-                Max 20 characters. This will be your legend on the leaderboard.
+                Max 20 characters. This will be your legend on the leaderboard.<br/>
+                <span className="text-cyan-600 font-bold">Default password: {DEFAULT_PASSWORD}</span>
              </p>
           </div>
 
@@ -108,3 +146,4 @@ const UserInitModal: React.FC<UserInitModalProps> = ({ isOpen, onUserCreate }) =
 };
 
 export default UserInitModal;
+

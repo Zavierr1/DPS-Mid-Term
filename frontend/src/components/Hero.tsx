@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { ChevronDown, Zap, Target, Code } from 'lucide-react';
+import { Zap, Target, Code } from 'lucide-react';
 
 const HeroSection: React.FC = () => {
   const statsRef = useRef<HTMLDivElement>(null);
@@ -55,16 +55,18 @@ const HeroSection: React.FC = () => {
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
-            <button className="group relative px-8 py-4 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-lg font-semibold text-white transform hover:scale-105 transition-all duration-300 hover:shadow-lg hover:shadow-cyan-500/25">
+          <button 
+              onClick={() => {
+                const el = document.getElementById('challenges');
+                if (el) el.scrollIntoView({ behavior: 'smooth' });
+              }}
+              className="group relative px-8 py-4 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-lg font-semibold text-white transform hover:scale-105 transition-all duration-300 hover:shadow-lg hover:shadow-cyan-500/25"
+            >
               <span className="relative z-10 flex items-center">
                 <Zap className="w-5 h-5 mr-2" />
-                Start Hacking
+                View Challenges
               </span>
               <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-cyan-700 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-            </button>
-            
-            <button className="px-8 py-4 border-2 border-cyan-500/50 rounded-lg font-semibold text-cyan-600 hover:bg-cyan-50 transition-all duration-300 backdrop-blur-sm">
-              View Challenges
             </button>
           </div>
 
@@ -94,11 +96,6 @@ const HeroSection: React.FC = () => {
               <div className="text-slate-600 font-primary">Active</div>
             </div>
           </div>
-        </div>
-
-        {/* Scroll Indicator */}
-        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
-          <ChevronDown className="w-6 h-6 text-slate-500" />
         </div>
       </div>
     </section>

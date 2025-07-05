@@ -80,6 +80,13 @@ const ChallengeGrid: React.FC = () => {
     filter === 'All' || challenge.category === filter
   );
 
+  const handleClose = () => {
+    setShowSQLChallenge(false);
+    setShowXSSChallenge(false);
+    setShowCryptoChallenge(false);
+    setShowNetworkChallenge(false);
+  };
+
   return (
     <section id="challenges" className="relative py-20 overflow-hidden min-h-screen bg-gradient-to-br from-white via-slate-50 to-cyan-50">
         {/* Animated Background from Login Page */}
@@ -203,10 +210,10 @@ const ChallengeGrid: React.FC = () => {
         </div>
 
         {/* Challenge Modals */}
-            <SQLInjectionChallenge isOpen={showSQLChallenge} onClose={() => setShowSQLChallenge(false)} onComplete={handleChallengeComplete} />
-            <XSSChallenge isOpen={showXSSChallenge} onClose={() => setShowXSSChallenge(false)} onComplete={handleChallengeComplete} />
-            <CryptoChallenge isOpen={showCryptoChallenge} onClose={() => setShowCryptoChallenge(false)} onComplete={handleChallengeComplete} />
-            <NetworkChallenge isOpen={showNetworkChallenge} onClose={() => setShowNetworkChallenge(false)} onComplete={handleChallengeComplete} />
+            <SQLInjectionChallenge isOpen={showSQLChallenge} onClose={handleClose} onComplete={handleChallengeComplete} />
+            <XSSChallenge isOpen={showXSSChallenge} onClose={handleClose} onComplete={handleChallengeComplete} />
+            <CryptoChallenge isOpen={showCryptoChallenge} onClose={handleClose} onComplete={handleChallengeComplete} />
+            <NetworkChallenge isOpen={showNetworkChallenge} onClose={handleClose} onComplete={handleChallengeComplete} />
       </div>
     </section>
   );
