@@ -7,7 +7,7 @@ import Footer from './components/Footer';
 import { GameProvider } from './context/GameContext';
 
 // Impor fungsi penting dari file auth.js Anda
-import { onAuthStateChange, logoutUser } from './firebase/auth.ts';
+import { onAuthStateChange, logoutUser, getUserProfile } from './firebase/auth.ts';
 import type { User as FirebaseUser } from 'firebase/auth';
 
 
@@ -18,13 +18,20 @@ function AppContent() {
   const [isLoading, setIsLoading] = useState(true);
   // State untuk melacak apakah ada challenge yang sedang terbuka
   const [isChallengeOpen, setIsChallengeOpen] = useState(false);
+  const [userProfile, setUserProfile] = useState<any | null>(null);
 
   useEffect(() => {
     // onAuthStateChange adalah listener dari Firebase.
     // Ia akan secara otomatis berjalan ketika pengguna login atau logout.
-    const unsubscribe = onAuthStateChange((user) => {
+    const unsubscribe = onAuthStateChange(async (user) => {
       setCurrentUser(user); // `user` akan berisi data jika login, dan `null` jika logout
       setIsLoading(false); // Sembunyikan loading setelah status otentikasi diketahui
+      if (user) {
+        const profile = await getUserProfile(user.uid);
+        setUserProfile(profile);
+      } else {
+        setUserProfile(null);
+      }
     });
 
     // Ini penting untuk membersihkan listener saat komponen tidak lagi digunakan
@@ -61,7 +68,12 @@ function AppContent() {
         <Login />
       ) : (
         <div className="min-h-screen bg-gradient-to-br from-white via-slate-50 to-cyan-50">
-          <Navbar onLogout={handleLogout} isDisabled={isChallengeOpen} />
+          <Navbar 
+            onLogout={handleLogout} 
+            isDisabled={isChallengeOpen} 
+            user={userProfile}
+            currentUser={currentUser}
+          />
           <div className={`${isChallengeOpen ? 'pointer-events-none blur-sm opacity-50' : ''} transition-all duration-300`}>
             <Hero />
           </div>

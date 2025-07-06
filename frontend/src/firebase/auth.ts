@@ -62,12 +62,18 @@ export const logoutUser = (): Promise<void> => {
  * Gets user profile data from Firestore
  */
 export const getUserProfile = async (uid: string): Promise<any | null> => {
-  const docRef = doc(db, "users", uid);
-  const docSnap = await getDoc(docRef);
-  
-  if (docSnap.exists()) {
-    return docSnap.data();
-  } else {
+  try {
+    const docRef = doc(db, "users", uid);
+    const docSnap = await getDoc(docRef);
+    
+    if (docSnap.exists()) {
+      return docSnap.data();
+    } else {
+      console.log("No user profile found in Firestore for uid:", uid);
+      return null;
+    }
+  } catch (error) {
+    console.error("Error getting user profile:", error);
     return null;
   }
 };

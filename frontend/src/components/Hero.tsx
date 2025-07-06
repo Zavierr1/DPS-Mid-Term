@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { Zap, Target, Code } from 'lucide-react';
+import { Zap } from 'lucide-react';
 
 const HeroSection: React.FC = () => {
   const statsRef = useRef<HTMLDivElement>(null);
@@ -68,33 +68,6 @@ const HeroSection: React.FC = () => {
               </span>
               <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-cyan-700 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             </button>
-          </div>
-
-          {/* Stats */}
-          <div ref={statsRef} className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-2xl mx-auto">
-            <div className="text-center">
-              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-r from-cyan-100 to-blue-100 backdrop-blur-sm border border-cyan-300 flex items-center justify-center">
-                <Target className="w-8 h-8 text-cyan-600" />
-              </div>
-              <div className="text-2xl font-bold text-slate-800 font-heading">4</div>
-              <div className="text-slate-600 font-primary">Challenges</div>
-            </div>
-
-            <div className="text-center">
-              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-r from-teal-100 to-cyan-100 backdrop-blur-sm border border-teal-300 flex items-center justify-center">
-                <Code className="w-8 h-8 text-teal-600" />
-              </div>
-              <div className="text-2xl font-bold text-slate-800 font-heading">1</div>
-              <div className="text-slate-600 font-primary">Hackers</div>
-            </div>
-
-            <div className="text-center">
-              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-r from-blue-100 to-cyan-100 backdrop-blur-sm border border-blue-300 flex items-center justify-center">
-                <Zap className="w-8 h-8 text-blue-600" />
-              </div>
-              <div className="text-2xl font-bold text-slate-800 font-heading">24/7</div>
-              <div className="text-slate-600 font-primary">Active</div>
-            </div>
           </div>
         </div>
       </div>

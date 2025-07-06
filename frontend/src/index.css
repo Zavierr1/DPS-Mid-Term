@@ -1,4 +1,14 @@
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
 @import "tailwindcss";
 
+body {
+  font-family: 'JetBrains Mono', monospace !important;
+  background-color: #f8fafc;
+  color: #22223b;
+}
+
+h1, h2, h3, h4, h5, h6, button, input, textarea, select, label {
+  font-family: 'JetBrains Mono', monospace !important;
+}
+
 
