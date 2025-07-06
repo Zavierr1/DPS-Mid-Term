@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { X, CheckCircle, XCircle, Lightbulb, Target, Wifi, Zap } from 'lucide-react';
+import { matchAnswer } from '../utils/answerMatcher';
+import { getAnswersForChallenge } from '../data/challengeAnswers';
+import MatchResultDisplay from './MatchResultDisplay';
 
 interface NetworkChallengeProps {
   isOpen: boolean;
@@ -12,6 +15,7 @@ interface Challenge {
   question: string;
   hint: string;
   expectedPayload: string;
+  answerKey?: string; // Key to look up in the dataset
   details: string; // Renamed from vulnerableCode for clarity
   explanation: string;
   points: number;
@@ -23,6 +27,7 @@ const networkChallenges: Challenge[] = [
         question: "A system is using a Class C private IP address: 192.168.1.10. What is its default subnet mask?",
         hint: "Class C networks dedicate the first three octets to the network portion. How would you represent that in a subnet mask?",
         expectedPayload: "255.255.255.0",
+        answerKey: "subnet_mask_class_c",
         details: "IP Address: 192.168.1.10\nClass: C (Private Range: 192.168.0.0 - 192.168.255.255)\nNetwork Bits: 24\nHost Bits: 8",
         explanation: "Correct. Class C networks use a /24 prefix, meaning the first 24 bits are for the network address. This corresponds to a subnet mask of 255.255.255.0.",
         points: 20
@@ -32,6 +37,7 @@ const networkChallenges: Challenge[] = [
         question: "You are scanning a web server and find port 443 is open. What service is most likely running on this port?",
         hint: "This port is used for the secure version of the standard web protocol.",
         expectedPayload: "HTTPS",
+        answerKey: "port_443_service",
         details: "Common Web Ports:\n- Port 80: HTTP (Hypertext Transfer Protocol)\n- Port 443: ???\n- Port 8080: HTTP Alternate (Proxy/Web Cache)",
         explanation: "Exactly. Port 443 is the standard port for HTTPS (HTTP Secure), which encrypts web traffic using TLS/SSL.",
         points: 15
@@ -41,6 +47,7 @@ const networkChallenges: Challenge[] = [
         question: "What type of attack involves overwhelming a server with a flood of traffic from many different sources, making it unavailable?",
         hint: "The key here is 'from many different sources'. It's a 'Distributed' form of a common attack.",
         expectedPayload: "DDoS",
+        answerKey: "ddos_attack",
         details: "Attack Signature:\n- Source IPs: Multiple, geographically diverse\n- Traffic Volume: Extremely high (Gbps or Tbps)\n- Goal: Resource exhaustion (CPU, bandwidth, memory)",
         explanation: "That's right. A Distributed Denial of Service (DDoS) attack uses a botnet of compromised machines to simultaneously attack a single target.",
         points: 30
@@ -50,6 +57,7 @@ const networkChallenges: Challenge[] = [
         question: "An attacker is intercepting and relaying communication between two parties without their knowledge. What is this attack called?",
         hint: "The attacker secretly positions themselves 'in the middle' of the conversation.",
         expectedPayload: "Man-in-the-Middle",
+        answerKey: "mitm_attack",
         details: "Attack Vector: Unsecured Wi-Fi Network\nTechnique: ARP Spoofing\nObjective: Intercept credentials from a login page.",
         explanation: "Correct. A Man-in-the-Middle (MITM) attack allows the adversary to eavesdrop on, and even alter, the communication between two victims.",
         points: 40
@@ -59,6 +67,7 @@ const networkChallenges: Challenge[] = [
         question: "What protocol is responsible for translating a domain name like 'google.com' into an IP address like '142.250.191.78'?",
         hint: "Think of it as the phonebook of the internet.",
         expectedPayload: "DNS",
+        answerKey: "dns_protocol",
         details: "Query Process:\n1. User -> google.com\n2. PC asks Recursive Resolver\n3. Resolver asks Root Server -> .com TLD Server -> Authoritative Server\n4. IP Address -> User",
         explanation: "Perfect. The Domain Name System (DNS) is the hierarchical and decentralized naming system used to locate computers and services on the internet.",
         points: 25
@@ -72,6 +81,7 @@ const NetworkChallenge: React.FC<NetworkChallengeProps> = ({ isOpen, onClose, on
   const [showHint, setShowHint] = useState(false);
   const [attempts, setAttempts] = useState(0);
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
+  const [matchDetails, setMatchDetails] = useState<any>(null);
   const [totalScore, setTotalScore] = useState(0);
   const [timeElapsed, setTimeElapsed] = useState(0);
 
@@ -121,6 +131,7 @@ const NetworkChallenge: React.FC<NetworkChallengeProps> = ({ isOpen, onClose, on
   const resetForNextChallenge = () => {
     setUserInput('');
     setIsCorrect(null);
+    setMatchDetails(null);
     setAttempts(0);
     setShowHint(false);
   };
@@ -129,16 +140,51 @@ const NetworkChallenge: React.FC<NetworkChallengeProps> = ({ isOpen, onClose, on
     if (!userInput.trim()) return;
 
     const challenge = networkChallenges[currentChallenge];
-    const normalizedUserInput = userInput.trim().replace(/[^a-z0-9.-]/gi, '').toLowerCase();
-    const normalizedPayload = challenge.expectedPayload.trim().replace(/[^a-z0-9.-]/gi, '').toLowerCase();
-    const isAnswerCorrect = normalizedUserInput === normalizedPayload;
+    
+    let isAnswerCorrect = false;
+    let resultDetails = { matchType: 'none', confidence: 0, similarity: 0 };
+    
+    // Use flexible matching if answerKey is defined
+    if (challenge.answerKey) {
+      const acceptableAnswers = getAnswersForChallenge('network', challenge.answerKey);
+      if (acceptableAnswers) {
+        const result = matchAnswer(userInput, acceptableAnswers, {
+          fuzzyThreshold: 75, // Allow 75% similarity
+          strictMode: false
+        });
+        isAnswerCorrect = result.isMatch;
+        resultDetails = { 
+          matchType: result.matchType, 
+          confidence: result.confidence,
+          similarity: result.similarity
+        };
+      }
+    } else {
+      // Fallback to original logic for backwards compatibility
+      const normalizedUserInput = userInput.trim().replace(/[^a-z0-9.-]/gi, '').toLowerCase();
+      const normalizedPayload = challenge.expectedPayload.trim().replace(/[^a-z0-9.-]/gi, '').toLowerCase();
+      isAnswerCorrect = normalizedUserInput === normalizedPayload;
+      resultDetails = { matchType: 'exact', confidence: 100, similarity: 100 };
+    }
     
     setAttempts(prev => prev + 1);
     setIsCorrect(isAnswerCorrect);
+    setMatchDetails(resultDetails);
 
     if (isAnswerCorrect) {
-      const scoreMultiplier = Math.max(1 - (attempts * 0.15), 0.4);
-      const earnedPoints = Math.round(challenge.points * scoreMultiplier);
+      // Adjust score based on match type and attempts
+      let baseMultiplier = Math.max(1 - (attempts * 0.15), 0.4);
+      
+      // Bonus for exact matches, slight penalty for fuzzy matches
+      if (resultDetails.matchType === 'exact') {
+        baseMultiplier *= 1.0;
+      } else if (resultDetails.matchType === 'synonym' || resultDetails.matchType === 'abbreviation') {
+        baseMultiplier *= 0.95;
+      } else if (resultDetails.matchType === 'fuzzy') {
+        baseMultiplier *= 0.85;
+      }
+      
+      const earnedPoints = Math.round(challenge.points * baseMultiplier);
       const newTotalScore = totalScore + earnedPoints;
       setTotalScore(newTotalScore);
 
@@ -275,21 +321,24 @@ const NetworkChallenge: React.FC<NetworkChallengeProps> = ({ isOpen, onClose, on
           )}
 
           {/* Result */}
-          {isCorrect !== null && (
-            <div className={`p-4 rounded-lg border-l-4 ${isCorrect ? 'bg-green-500/10 border-green-500' : 'bg-red-500/10 border-red-500'}`}>
-              {isCorrect ? (
-                <div>
-                  <p className="font-semibold text-green-700 mb-2">Signal Acquired! Correct Answer.</p>
-                  <p className="text-slate-600 text-sm">{challenge.explanation}</p>
-                  {currentChallenge < networkChallenges.length - 1 ? (
-                    <p className="text-cyan-600 mt-2 font-semibold animate-pulse">Loading next challenge...</p>
-                  ) : (
-                    <p className="text-green-600 mt-2 font-semibold">All challenges completed! Network mastery achieved!</p>
-                  )}
-                </div>
-              ) : (
-                <p className="font-semibold text-red-700">Incorrect answer. Please try again.</p>
-              )}
+          <MatchResultDisplay
+            isCorrect={isCorrect}
+            matchType={matchDetails?.matchType}
+            similarity={matchDetails?.similarity}
+            confidence={matchDetails?.confidence}
+            explanation={isCorrect ? challenge.explanation : undefined}
+            showDetails={true}
+          />
+
+          {isCorrect && currentChallenge < networkChallenges.length - 1 && (
+            <div className="text-center">
+              <p className="text-cyan-600 font-semibold animate-pulse">Loading next challenge...</p>
+            </div>
+          )}
+
+          {isCorrect && currentChallenge >= networkChallenges.length - 1 && (
+            <div className="text-center">
+              <p className="text-green-600 font-semibold">All challenges completed! Network mastery achieved!</p>
             </div>
           )}
         </div>

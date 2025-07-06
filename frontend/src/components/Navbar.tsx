@@ -28,7 +28,7 @@ const Navbar: React.FC<NavbarProps> = ({ onLogout }) => {
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         isScrolled 
           ? 'bg-white/90 backdrop-blur-md border-b border-cyan-200/50 shadow-sm' 
-          : 'bg-transparent'
+          : 'bg-slate-20/50 backdrop-blur-md border-b border-cyan-200/50 shadow-none'
       }`}
     >
       <div className="container mx-auto px-6 py-4">

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, Terminal, CheckCircle, XCircle, Lightbulb, Target, AlertTriangle, Zap } from 'lucide-react';
+import { matchXSSChallenge } from '../data/challengeAnswers';
 
 // Define the structure for each challenge
 interface Challenge {
@@ -7,6 +8,7 @@ interface Challenge {
   question: string;
   hint: string;
   expectedPayload: string;
+  answerKey?: string; // Key to look up in the dataset
   vulnerableCode: string;
   explanation: string;
   points: number;
@@ -26,6 +28,7 @@ const xssChallenges: Challenge[] = [
         question: "Find a basic XSS vulnerability. Your goal is to inject a script that triggers an alert dialog.",
         hint: "Classic XSS starts with a <script> tag. Try inserting one into the input field.",
         expectedPayload: "<script>alert('XSS')</script>",
+        answerKey: "xss_basic_script_alert",
         vulnerableCode: `// The user input is directly rendered into the DOM.
 document.getElementById('comments').innerHTML = userInput;`,
         explanation: "This is a classic stored XSS. The application fails to sanitize user input, allowing arbitrary JavaScript execution via <script> tags.",
@@ -36,6 +39,7 @@ document.getElementById('comments').innerHTML = userInput;`,
         question: "The developer has filtered out <script> tags. Find another way to execute your alert.",
         hint: "Many HTML tags have event handlers (e.g., onerror, onload) that can run scripts. Think about an image that fails to load.",
         expectedPayload: "<img src=x onerror=alert('XSS')>",
+        answerKey: "xss_img_onerror",
         vulnerableCode: `// A basic filter is in place.
 const filtered = userInput.replace(/<script[^>]*>.*?<\\/script>/gi, '');
 document.getElementById('content').innerHTML = filtered;`,
@@ -47,6 +51,7 @@ document.getElementById('content').innerHTML = filtered;`,
         question: "Exploit a DOM-based XSS. The page uses 'document.write()' with a URL parameter. Break out of the script context.",
         hint: "You need to close the existing script tag and inject your own. Look at the vulnerable code to see how your input is being placed.",
         expectedPayload: "</script><script>alert('DOM-XSS')</script>",
+        answerKey: "xss_dom_script_break",
         vulnerableCode: `const urlParam = new URLSearchParams(window.location.search).get('name');
 document.write('<script>var username = "' + urlParam + '";</script>');`,
         explanation: "In DOM-based XSS, the vulnerability lies in client-side code. By closing the initial script tag, you can inject and execute your own payload.",
@@ -57,6 +62,7 @@ document.write('<script>var username = "' + urlParam + '";</script>');`,
         question: "Bypass a Content Security Policy (CSP) that blocks inline scripts. Your payload should still trigger an alert.",
         hint: "The CSP is strict. Look for ways to execute code in a different context, perhaps using an iframe and the 'srcdoc' attribute.",
         expectedPayload: "<iframe srcdoc='<script>parent.alert(\"CSP-Bypass\")</script>'>",
+        answerKey: "xss_csp_bypass_iframe",
         vulnerableCode: `Content-Security-Policy: script-src 'self'
 // CSP blocks inline scripts and eval().
 <div id="userContent">\${userInput}</div>`,
@@ -68,6 +74,7 @@ document.write('<script>var username = "' + urlParam + '";</script>');`,
         question: "Exploit a reflected XSS in a search function that encodes '<' and '>' but not quotes.",
         hint: "Angle brackets are blocked, so you can't create new tags. Try breaking out of the 'value' attribute of the input field to add a new attribute.",
         expectedPayload: "\" onmouseover=\"alert('Reflected-XSS')\"",
+        answerKey: "xss_reflected_attribute_break",
         vulnerableCode: `// The filter only encodes angle brackets.
 const encoded = userInput.replace(/</g, '&lt;').replace(/>/g, '&gt;');
 return '<input type="text" value="' + encoded + '">';`,
@@ -138,14 +145,16 @@ const XSSChallenge: React.FC<XSSChallengeProps> = ({ isOpen, onClose, onComplete
     if (!userInput.trim()) return;
 
     const challenge = xssChallenges[currentChallenge];
-    // A more flexible check for common XSS patterns
-    const isAnswerCorrect = 
-        userInput.toLowerCase().includes('alert(') &&
-        (userInput.toLowerCase().includes('<script>') ||
-          userInput.toLowerCase().includes('onerror') ||
-          userInput.toLowerCase().includes('onload') ||
-          userInput.toLowerCase().includes('onmouseover') ||
-          userInput.toLowerCase().includes('srcdoc'));
+    
+    let isAnswerCorrect = false;
+    
+    // Use pattern matching if answerKey is defined
+    if (challenge.answerKey) {
+      isAnswerCorrect = matchXSSChallenge(userInput, challenge.answerKey);
+    } else {
+      // Fallback to simple comparison
+      isAnswerCorrect = userInput.trim().toLowerCase() === challenge.expectedPayload.toLowerCase();
+    }
     
     setAttempts(prev => prev + 1);
     setIsCorrect(isAnswerCorrect);

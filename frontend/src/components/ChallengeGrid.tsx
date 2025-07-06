@@ -10,7 +10,7 @@ interface Challenge {
   id: number;
   title: string;
   description: string;
-  difficulty: 'Beginner' | 'Intermediate' | 'Advanced' | 'Expert';
+  difficulty: 'Beginner' | 'Intermediate';
   category: string;
   points: number;
   participants: number;
@@ -24,8 +24,6 @@ const mockChallenges: Challenge[] = [
     { id: 2, title: 'Cross-Site Scripting (XSS)', description: 'Learn to exploit XSS vulnerabilities including reflected, stored, and DOM-based attacks with CSP bypasses.', difficulty: 'Intermediate', category: 'Web Security', points: 250, participants: 1847, timeEstimate: '35 min', completionRate: 65 },
     { id: 3, title: 'Cryptography Challenges', description: 'Break classical ciphers, analyze weak implementations, and crack hashes using various cryptanalysis techniques.', difficulty: 'Intermediate', category: 'Cryptography', points: 275, participants: 1247, timeEstimate: '50 min', completionRate: 42 },
     { id: 4, title: 'Network Security Fundamentals', description: 'Test your knowledge of network protocols, security concepts, and common attack vectors in network environments.', difficulty: 'Beginner', category: 'Network Security', points: 200, participants: 3156, timeEstimate: '25 min', completionRate: 71 },
-    { id: 5, title: 'Advanced Penetration Testing', description: 'Combine multiple attack vectors in realistic scenarios. Requires completion of at least 2 other challenges.', difficulty: 'Advanced', category: 'Penetration Testing', points: 500, participants: 567, timeEstimate: '90 min', completionRate: 23 },
-    { id: 6, title: 'Digital Forensics Investigation', description: 'Analyze digital evidence, recover deleted files, and trace attack patterns in this comprehensive forensics challenge.', difficulty: 'Expert', category: 'Digital Forensics', points: 750, participants: 234, timeEstimate: '2 hrs', completionRate: 12 }
 ];
 
 const ChallengeGrid: React.FC = () => {
@@ -60,13 +58,11 @@ const ChallengeGrid: React.FC = () => {
     }
   };
 
-  const categories = ['All', 'Web Security', 'Cryptography', 'Network Security', 'Penetration Testing', 'Digital Forensics'];
+  const categories = ['All', 'Web Security', 'Cryptography', 'Network Security'];
 
   const difficultyColors = {
     'Beginner': 'bg-cyan-500/10 text-cyan-600 border-cyan-500/20',
     'Intermediate': 'bg-amber-500/10 text-amber-600 border-amber-500/20',
-    'Advanced': 'bg-red-500/10 text-red-600 border-red-500/20',
-    'Expert': 'bg-indigo-500/10 text-indigo-600 border-indigo-500/20'
   };
 
   const filteredChallenges = mockChallenges.filter(challenge =>

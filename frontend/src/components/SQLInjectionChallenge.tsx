@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, Terminal, CheckCircle, XCircle, Lightbulb, Target, Zap } from 'lucide-react';
+import { matchSQLChallenge } from '../data/challengeAnswers';
 
 interface SQLInjectionChallengeProps {
   isOpen: boolean;
@@ -12,17 +13,63 @@ interface Challenge {
   question: string;
   hint: string;
   expectedPayload: string;
+  answerKey?: string; // Key to look up in the dataset
   vulnerableCode: string;
   explanation: string;
   points: number;
 }
 
 const sqlChallenges: Challenge[] = [
-    { id: 1, question: "The login form is vulnerable. Bypass authentication by injecting SQL that always returns true.", hint: "Try using a condition that's always true, like '1'='1'.", expectedPayload: "' OR '1'='1", vulnerableCode: `SELECT * FROM users WHERE username='$input' AND password='$password'`, explanation: "By injecting ' OR '1'='1, the SQL query becomes: SELECT * FROM users WHERE username='' OR '1'='1' AND password='' which always returns true, granting access.", points: 25 },
-    { id: 2, question: "Extract the database version using a UNION-based attack. The query returns one column.", hint: "Use UNION SELECT to add your own data. Database version can be retrieved with @@VERSION or VERSION().", expectedPayload: "' UNION SELECT @@VERSION--", vulnerableCode: `SELECT name FROM products WHERE id='$input'`, explanation: "UNION SELECT allows you to combine results from different queries. The '--' comments out the rest of the original query, preventing errors.", points: 35 },
-    { id: 3, question: "A search feature is vulnerable. Extract the first table name from the database schema.", hint: "Use information_schema.tables to get table names. Use LIMIT 1 to get the first result.", expectedPayload: "' UNION SELECT table_name FROM information_schema.tables LIMIT 1--", vulnerableCode: `SELECT title, content FROM articles WHERE title LIKE '%$input%'`, explanation: "The information_schema database contains metadata about all tables. This technique helps enumerate the database structure.", points: 45 },
-    { id: 4, question: "Bypass a basic, case-sensitive filter that blocks the 'OR' keyword.", hint: "SQL keywords are not case-sensitive. Try different cases or alternative operators.", expectedPayload: "' or '1'='1", vulnerableCode: `SELECT * FROM users WHERE id='$input' /* Filter blocks: OR */`, explanation: "Many basic filters only check for specific string patterns. Using lowercase 'or' bypasses a case-sensitive filter for 'OR'.", points: 30 },
-    { id: 5, question: "Perform a time-based blind SQL injection. Confirm if the admin's password starts with 'c'.", hint: "Use SLEEP() or BENCHMARK() to create time delays based on a condition.", expectedPayload: "' AND IF(SUBSTRING((SELECT password FROM users WHERE username='admin'),1,1)='c',SLEEP(5),0)--", vulnerableCode: `SELECT id FROM users WHERE email='$input'`, explanation: "Time-based blind injection uses database delay functions to infer information when no direct output is visible. If the page takes longer to load, the condition is true.", points: 55 }
+    { 
+      id: 1, 
+      question: "The login form is vulnerable. Bypass authentication by injecting SQL that always returns true.", 
+      hint: "Try using a condition that's always true, like '1'='1'.", 
+      expectedPayload: "' OR '1'='1", 
+      answerKey: "sql_auth_bypass",
+      vulnerableCode: `SELECT * FROM users WHERE username='$input' AND password='$password'`, 
+      explanation: "By injecting ' OR '1'='1, the SQL query becomes: SELECT * FROM users WHERE username='' OR '1'='1' AND password='' which always returns true, granting access.", 
+      points: 25
+    },
+    { 
+      id: 2, 
+      question: "Extract the database version using a UNION-based attack. The query returns one column.", 
+      hint: "Use UNION SELECT to add your own data. Database version can be retrieved with @@VERSION or VERSION().", 
+      expectedPayload: "' UNION SELECT @@VERSION--", 
+      answerKey: "sql_union_version",
+      vulnerableCode: `SELECT name FROM products WHERE id='$input'`, 
+      explanation: "UNION SELECT allows you to combine results from different queries. The '--' comments out the rest of the original query, preventing errors.", 
+      points: 35 
+    },
+    { 
+      id: 3, 
+      question: "A search feature is vulnerable. Extract the first table name from the database schema.", 
+      hint: "Use information_schema.tables to get table names. Use LIMIT 1 to get the first result.", 
+      expectedPayload: "' UNION SELECT table_name FROM information_schema.tables LIMIT 1--", 
+      answerKey: "sql_schema_enum",
+      vulnerableCode: `SELECT title, content FROM articles WHERE title LIKE '%$input%'`, 
+      explanation: "The information_schema database contains metadata about all tables. This technique helps enumerate the database structure.", 
+      points: 45 
+    },
+    { 
+      id: 4, 
+      question: "Bypass a basic, case-sensitive filter that blocks the 'OR' keyword.", 
+      hint: "SQL keywords are not case-sensitive. Try different cases or alternative operators.", 
+      expectedPayload: "' or '1'='1", 
+      answerKey: "sql_case_bypass",
+      vulnerableCode: `SELECT * FROM users WHERE id='$input' /* Filter blocks: OR */`, 
+      explanation: "Many basic filters only check for specific string patterns. Using lowercase 'or' bypasses a case-sensitive filter for 'OR'.", 
+      points: 30 
+    },
+    { 
+      id: 5, 
+      question: "Perform a time-based blind SQL injection. Confirm if the admin's password starts with 'c'.", 
+      hint: "Use SLEEP() or BENCHMARK() to create time delays based on a condition.", 
+      expectedPayload: "' AND IF(SUBSTRING((SELECT password FROM users WHERE username='admin'),1,1)='c',SLEEP(5),0)--", 
+      answerKey: "sql_time_based_blind",
+      vulnerableCode: `SELECT id FROM users WHERE email='$input'`, 
+      explanation: "Time-based blind injection uses database delay functions to infer information when no direct output is visible. If the page takes longer to load, the condition is true.", 
+      points: 55 
+    }
 ];
 
 
@@ -89,11 +136,16 @@ const SQLInjectionChallenge: React.FC<SQLInjectionChallengeProps> = ({ isOpen, o
     if (!userInput.trim()) return;
 
     const challenge = sqlChallenges[currentChallenge];
-    // A more robust check for various SQL injection patterns
-    const normalizedUserInput = userInput.trim().replace(/\s+/g, ' ').toLowerCase();
-    const normalizedPayload = challenge.expectedPayload.trim().replace(/\s+/g, ' ').toLowerCase();
     
-    const isAnswerCorrect = normalizedUserInput.includes(normalizedPayload);
+    let isAnswerCorrect = false;
+    
+    // Use pattern matching if answerKey is defined
+    if (challenge.answerKey) {
+      isAnswerCorrect = matchSQLChallenge(userInput, challenge.answerKey);
+    } else {
+      // Fallback to simple comparison
+      isAnswerCorrect = userInput.trim().toLowerCase() === challenge.expectedPayload.toLowerCase();
+    }
     
     setAttempts(prev => prev + 1);
     setIsCorrect(isAnswerCorrect);
