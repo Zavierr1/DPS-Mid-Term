@@ -288,7 +288,7 @@ const NetworkChallenge: React.FC<NetworkChallengeProps> = ({ isOpen, onClose, on
                   )}
                 </div>
               ) : (
-                <p className="font-semibold text-red-700">Connection Timed Out. Incorrect answer. Please try again.</p>
+                <p className="font-semibold text-red-700">Incorrect answer. Please try again.</p>
               )}
             </div>
           )}

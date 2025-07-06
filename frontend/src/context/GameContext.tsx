@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState } from 'react';
 import type { ReactNode } from 'react';
 
 interface User {
@@ -36,22 +36,6 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [userProgress, setUserProgress] = useState<UserProgress[]>([]);
 
-  // Initialize user from localStorage
-  useEffect(() => {
-    // Load current user
-    const savedUser = localStorage.getItem('hackquest-user');
-    if (savedUser) {
-      const user = JSON.parse(savedUser);
-      setCurrentUser(user);
-    }
-
-    // Load user progress
-    const savedProgress = localStorage.getItem('hackquest-progress');
-    if (savedProgress) {
-      setUserProgress(JSON.parse(savedProgress));
-    }
-  }, []);
-
   const initializeUser = (username: string) => {
     const newUser: User = {
       id: Date.now().toString(),
@@ -67,7 +51,6 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     };
 
     setCurrentUser(newUser);
-    localStorage.setItem('hackquest-user', JSON.stringify(newUser));
   };
 
   const updateUserScore = (challengeId: string, score: number, attempts: number, timeSpent: number) => {
@@ -83,7 +66,6 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
     setUserProgress(prev => {
       const updated = [...prev.filter(p => p.challengeId !== challengeId), newProgress];
-      localStorage.setItem('hackquest-progress', JSON.stringify(updated));
       return updated;
     });
   };
@@ -101,7 +83,6 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     };
 
     setCurrentUser(updatedUser);
-    localStorage.setItem('hackquest-user', JSON.stringify(updatedUser));
   };
 
   return (

@@ -23,13 +23,6 @@ const Navbar: React.FC<NavbarProps> = ({ onLogout }) => {
     }
   };
 
-  const handleReset = () => {
-    if (window.confirm('Are you sure you want to reset all data? This will log you out and delete all users, progress, and leaderboard data.')) {
-      localStorage.clear();
-      window.location.reload();
-    }
-  };
-
   return (
     <header 
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
@@ -54,16 +47,6 @@ const Navbar: React.FC<NavbarProps> = ({ onLogout }) => {
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
             <div className="flex items-center space-x-4">
-              {/* Reset Database Button */}
-              <button
-                onClick={handleReset}
-                className="px-3 py-2 font-semibold text-red-600 hover:text-white border border-red-600 hover:bg-red-600 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-400"
-                style={{ minWidth: 0 }}
-                title="Reset all app data (for testing)"
-              >
-                Reset Database
-
-              </button>
               {onLogout && (
                 <button 
                   onClick={handleLogout}
@@ -90,15 +73,6 @@ const Navbar: React.FC<NavbarProps> = ({ onLogout }) => {
           <div className="md:hidden absolute top-full left-0 right-0 bg-white/95 backdrop-blur-md border-b border-cyan-200/50 shadow-lg">
             <nav className="container mx-auto px-6 py-4 space-y-4">
               <div className="flex items-center space-x-4 pt-4 border-t border-cyan-200/50 justify-end">
-                {/* Reset Database Button (Mobile) */}
-                <button
-                  onClick={handleReset}
-                  className="px-3 py-2 font-semibold text-red-600 hover:text-white border border-red-600 hover:bg-red-600 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-400"
-                  style={{ minWidth: 0 }}
-                  title="Reset all app data (for testing)"
-                >
-                  Reset Database
-                </button>
                 {onLogout && (
                   <button 
                     onClick={handleLogout}

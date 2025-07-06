@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Lock, Clock, Users, Trophy, ChevronRight } from 'lucide-react';
+import { Clock, ChevronRight } from 'lucide-react';
 import SQLInjectionChallenge from './SQLInjectionChallenge';
 import XSSChallenge from './XSSChallenge';
 import CryptoChallenge from './CryptoChallenge';
@@ -15,20 +15,18 @@ interface Challenge {
   points: number;
   participants: number;
   timeEstimate: string;
-  isLocked: boolean;
   completionRate: number;
 }
 
 // Mock data remains the same
 const mockChallenges: Challenge[] = [
-    { id: 1, title: 'SQL Injection Mastery', description: 'Master SQL injection attacks from basic bypasses to advanced techniques including blind injection and WAF bypass.', difficulty: 'Beginner', category: 'Web Security', points: 300, participants: 2843, timeEstimate: '45 min', isLocked: false, completionRate: 78 },
-    { id: 2, title: 'Cross-Site Scripting (XSS)', description: 'Learn to exploit XSS vulnerabilities including reflected, stored, and DOM-based attacks with CSP bypasses.', difficulty: 'Intermediate', category: 'Web Security', points: 250, participants: 1847, timeEstimate: '35 min', isLocked: false, completionRate: 65 },
-    { id: 3, title: 'Cryptography Challenges', description: 'Break classical ciphers, analyze weak implementations, and crack hashes using various cryptanalysis techniques.', difficulty: 'Intermediate', category: 'Cryptography', points: 275, participants: 1247, timeEstimate: '50 min', isLocked: false, completionRate: 42 },
-    { id: 4, title: 'Network Security Fundamentals', description: 'Test your knowledge of network protocols, security concepts, and common attack vectors in network environments.', difficulty: 'Beginner', category: 'Network Security', points: 200, participants: 3156, timeEstimate: '25 min', isLocked: false, completionRate: 71 },
-    { id: 5, title: 'Advanced Penetration Testing', description: 'Combine multiple attack vectors in realistic scenarios. Requires completion of at least 2 other challenges.', difficulty: 'Advanced', category: 'Penetration Testing', points: 500, participants: 567, timeEstimate: '90 min', isLocked: true, completionRate: 23 },
-    { id: 6, title: 'Digital Forensics Investigation', description: 'Analyze digital evidence, recover deleted files, and trace attack patterns in this comprehensive forensics challenge.', difficulty: 'Expert', category: 'Digital Forensics', points: 750, participants: 234, timeEstimate: '2 hrs', isLocked: true, completionRate: 12 }
+    { id: 1, title: 'SQL Injection Mastery', description: 'Master SQL injection attacks from basic bypasses to advanced techniques including blind injection and WAF bypass.', difficulty: 'Beginner', category: 'Web Security', points: 300, participants: 2843, timeEstimate: '45 min', completionRate: 78 },
+    { id: 2, title: 'Cross-Site Scripting (XSS)', description: 'Learn to exploit XSS vulnerabilities including reflected, stored, and DOM-based attacks with CSP bypasses.', difficulty: 'Intermediate', category: 'Web Security', points: 250, participants: 1847, timeEstimate: '35 min', completionRate: 65 },
+    { id: 3, title: 'Cryptography Challenges', description: 'Break classical ciphers, analyze weak implementations, and crack hashes using various cryptanalysis techniques.', difficulty: 'Intermediate', category: 'Cryptography', points: 275, participants: 1247, timeEstimate: '50 min', completionRate: 42 },
+    { id: 4, title: 'Network Security Fundamentals', description: 'Test your knowledge of network protocols, security concepts, and common attack vectors in network environments.', difficulty: 'Beginner', category: 'Network Security', points: 200, participants: 3156, timeEstimate: '25 min', completionRate: 71 },
+    { id: 5, title: 'Advanced Penetration Testing', description: 'Combine multiple attack vectors in realistic scenarios. Requires completion of at least 2 other challenges.', difficulty: 'Advanced', category: 'Penetration Testing', points: 500, participants: 567, timeEstimate: '90 min', completionRate: 23 },
+    { id: 6, title: 'Digital Forensics Investigation', description: 'Analyze digital evidence, recover deleted files, and trace attack patterns in this comprehensive forensics challenge.', difficulty: 'Expert', category: 'Digital Forensics', points: 750, participants: 234, timeEstimate: '2 hrs', completionRate: 12 }
 ];
-
 
 const ChallengeGrid: React.FC = () => {
   const [filter, setFilter] = useState<string>('All');
@@ -44,11 +42,6 @@ const ChallengeGrid: React.FC = () => {
   };
 
   const handleChallengeClick = (challenge: Challenge) => {
-    if (challenge.isLocked) {
-      alert('This challenge is locked. Complete other challenges first!');
-      return;
-    }
-
     switch (challenge.title) {
       case 'SQL Injection Mastery':
         setShowSQLChallenge(true);
@@ -129,19 +122,8 @@ const ChallengeGrid: React.FC = () => {
             <div
               key={challenge.id}
               onClick={() => handleChallengeClick(challenge)}
-              className={`group relative overflow-hidden bg-white/80 backdrop-blur-lg rounded-2xl border border-cyan-200/50 shadow-lg shadow-cyan-500/10 transition-all duration-300
-              ${
-                challenge.isLocked 
-                ? 'opacity-60 grayscale cursor-not-allowed' 
-                : 'hover:cursor-pointer hover:shadow-2xl hover:shadow-cyan-500/20 hover:-translate-y-2'
-              }`}
+              className="group relative overflow-hidden bg-white/80 backdrop-blur-lg rounded-2xl border border-cyan-200/50 shadow-lg shadow-cyan-500/10 transition-all duration-300 hover:cursor-pointer hover:shadow-2xl hover:shadow-cyan-500/20 hover:-translate-y-2"
             >
-              {challenge.isLocked && (
-                <div className="absolute top-4 right-4 z-10 bg-slate-100/50 rounded-full p-2">
-                  <Lock className="w-5 h-5 text-slate-500" />
-                </div>
-              )}
-
               <div className="p-6">
                 {/* Header */}
                 <div className="flex items-start justify-between mb-4">
@@ -154,10 +136,8 @@ const ChallengeGrid: React.FC = () => {
                     </span>
                   </div>
                   <div className="text-right">
-                    <div className="flex items-center text-amber-500">
-                      <Trophy className="w-4 h-4 mr-1" />
-                      <span className="font-bold">{challenge.points}</span>
-                    </div>
+                    <div className="text-2xl font-bold text-cyan-600">{challenge.points}</div>
+                    <div className="text-xs text-slate-500">points</div>
                   </div>
                 </div>
 
@@ -169,15 +149,10 @@ const ChallengeGrid: React.FC = () => {
                 {/* Stats */}
                 <div className="flex items-center justify-between text-slate-500 border-t border-b border-slate-200/80 py-3 mb-6">
                   <div className="flex items-center gap-2">
-                    <Users className="w-4 h-4 text-cyan-600" />
-                    <span className="text-xs font-medium">{challenge.participants.toLocaleString()} Agents</span>
-                  </div>
-                  <div className="flex items-center gap-2">
                     <Clock className="w-4 h-4 text-cyan-600" />
                     <span className="text-xs font-medium">{challenge.timeEstimate}</span>
                   </div>
                 </div>
-
 
                 {/* Progress Bar & Success Rate */}
                 <div className="mb-4">
@@ -193,13 +168,12 @@ const ChallengeGrid: React.FC = () => {
                     </div>
                 </div>
 
-
                 {/* Action */}
                 <div className="flex items-center justify-between mt-6 pt-4 border-t border-slate-200/80">
                   <span className="text-sm text-slate-500">{challenge.category}</span>
                   <div className="flex items-center text-cyan-600 group-hover:translate-x-1 transition-transform">
                     <span className="text-sm font-semibold mr-1">
-                      {challenge.isLocked ? 'Locked' : 'Start Challenge'}
+                      Start Challenge
                     </span>
                     <ChevronRight className="w-4 h-4" />
                   </div>
