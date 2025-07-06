@@ -3,12 +3,14 @@ import { Shield, Menu, X, LogOut } from 'lucide-react';
 
 interface NavbarProps {
   onLogout?: () => void;
+  isDisabled?: boolean; 
 }
 
-const Navbar: React.FC<NavbarProps> = ({ onLogout }) => {
+const Navbar: React.FC<NavbarProps> = ({ onLogout, isDisabled }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
 
+  // Effect to handle navbar style on scroll
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 50);
@@ -16,6 +18,20 @@ const Navbar: React.FC<NavbarProps> = ({ onLogout }) => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  // Effect to lock body scroll when mobile menu is open
+  useEffect(() => {
+    if (isMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'auto';
+    }
+    
+    // Cleanup function to restore scroll on component unmount
+    return () => {
+      document.body.style.overflow = 'auto';
+    };
+  }, [isMenuOpen]);
 
   const handleLogout = () => {
     if (onLogout) {
@@ -29,7 +45,7 @@ const Navbar: React.FC<NavbarProps> = ({ onLogout }) => {
         isScrolled 
           ? 'bg-white/90 backdrop-blur-md border-b border-cyan-200/50 shadow-sm' 
           : 'bg-slate-20/50 backdrop-blur-md border-b border-cyan-200/50 shadow-none'
-      }`}
+      } ${isDisabled ? 'pointer-events-none blur-sm opacity-50' : ''}`}
     >
       <div className="container mx-auto px-6 py-4">
         <div className="flex items-center justify-between">
@@ -63,6 +79,8 @@ const Navbar: React.FC<NavbarProps> = ({ onLogout }) => {
           <button
             className="md:hidden text-slate-600 hover:text-cyan-600 transition-colors"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
+            aria-controls="mobile-menu"
+            aria-expanded={isMenuOpen}
           >
             {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
@@ -70,7 +88,10 @@ const Navbar: React.FC<NavbarProps> = ({ onLogout }) => {
 
         {/* Mobile Menu */}
         {isMenuOpen && (
-          <div className="md:hidden absolute top-full left-0 right-0 bg-white/95 backdrop-blur-md border-b border-cyan-200/50 shadow-lg">
+          <div 
+            id="mobile-menu"
+            className="md:hidden absolute top-full left-0 right-0 bg-white/95 backdrop-blur-md border-b border-cyan-200/50 shadow-lg"
+          >
             <nav className="container mx-auto px-6 py-4 space-y-4">
               <div className="flex items-center space-x-4 pt-4 border-t border-cyan-200/50 justify-end">
                 {onLogout && (

@@ -18,6 +18,10 @@ interface Challenge {
   completionRate: number;
 }
 
+interface ChallengeGridProps {
+  onChallengeStateChange?: (isOpen: boolean) => void;
+}
+
 // Mock data remains the same
 const mockChallenges: Challenge[] = [
     { id: 1, title: 'SQL Injection Mastery', description: 'Master SQL injection attacks from basic bypasses to advanced techniques including blind injection and WAF bypass.', difficulty: 'Beginner', category: 'Web Security', points: 300, participants: 2843, timeEstimate: '45 min', completionRate: 78 },
@@ -26,7 +30,7 @@ const mockChallenges: Challenge[] = [
     { id: 4, title: 'Network Security Fundamentals', description: 'Test your knowledge of network protocols, security concepts, and common attack vectors in network environments.', difficulty: 'Beginner', category: 'Network Security', points: 200, participants: 3156, timeEstimate: '25 min', completionRate: 71 },
 ];
 
-const ChallengeGrid: React.FC = () => {
+const ChallengeGrid: React.FC<ChallengeGridProps> = ({ onChallengeStateChange }) => {
   const [filter, setFilter] = useState<string>('All');
   const [showSQLChallenge, setShowSQLChallenge] = useState(false);
   const [showXSSChallenge, setShowXSSChallenge] = useState(false);
@@ -40,6 +44,11 @@ const ChallengeGrid: React.FC = () => {
   };
 
   const handleChallengeClick = (challenge: Challenge) => {
+    // Notify parent that a challenge is opening
+    if (onChallengeStateChange) {
+      onChallengeStateChange(true);
+    }
+    
     switch (challenge.title) {
       case 'SQL Injection Mastery':
         setShowSQLChallenge(true);
@@ -74,6 +83,19 @@ const ChallengeGrid: React.FC = () => {
     setShowXSSChallenge(false);
     setShowCryptoChallenge(false);
     setShowNetworkChallenge(false);
+    
+    // Notify parent that challenge is closing
+    if (onChallengeStateChange) {
+      onChallengeStateChange(false);
+    }
+    
+    // Ensure user stays on the challenge grid when closing modals
+    setTimeout(() => {
+      const challengesSection = document.getElementById('challenges');
+      if (challengesSection) {
+        challengesSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 100); // Small delay to ensure modal is closed first
   };
 
   return (

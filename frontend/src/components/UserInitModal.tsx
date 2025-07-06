@@ -55,7 +55,7 @@ const UserInitModal: React.FC<UserInitModalProps> = ({ isOpen, onUserCreate }) =
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 transition-opacity duration-300">
+    <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[9999] flex items-center justify-center p-4 transition-opacity duration-300">
       <div className="relative bg-white/90 backdrop-blur-xl rounded-2xl border border-cyan-200/50 w-full max-w-md p-8 shadow-2xl shadow-cyan-500/10">
         {/* Header */}
         <div className="text-center mb-8">

@@ -212,7 +212,7 @@ const NetworkChallenge: React.FC<NetworkChallengeProps> = ({ isOpen, onClose, on
   const progressPercentage = ((currentChallenge) / networkChallenges.length) * 100;
 
   return (
-    <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-hidden">
+    <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[9999] flex items-center justify-center p-4 overflow-hidden">
       <div className="relative bg-white/90 backdrop-blur-xl rounded-2xl border border-cyan-200/50 w-full max-w-4xl max-h-[90vh] flex flex-col shadow-2xl shadow-cyan-500/10 overflow-hidden">
         {/* Header */}
         <div className="p-6 border-b border-cyan-200/50 flex-shrink-0">

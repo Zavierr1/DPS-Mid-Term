@@ -16,6 +16,8 @@ function AppContent() {
   const [currentUser, setCurrentUser] = useState<FirebaseUser | null>(null);
   // State untuk menampilkan loading screen saat aplikasi pertama kali berjalan
   const [isLoading, setIsLoading] = useState(true);
+  // State untuk melacak apakah ada challenge yang sedang terbuka
+  const [isChallengeOpen, setIsChallengeOpen] = useState(false);
 
   useEffect(() => {
     // onAuthStateChange adalah listener dari Firebase.
@@ -59,10 +61,14 @@ function AppContent() {
         <Login />
       ) : (
         <div className="min-h-screen bg-gradient-to-br from-white via-slate-50 to-cyan-50">
-          <Navbar onLogout={handleLogout} />
-          <Hero />
-          <ChallengeGrid />
-          <Footer />
+          <Navbar onLogout={handleLogout} isDisabled={isChallengeOpen} />
+          <div className={`${isChallengeOpen ? 'pointer-events-none blur-sm opacity-50' : ''} transition-all duration-300`}>
+            <Hero />
+          </div>
+          <ChallengeGrid onChallengeStateChange={setIsChallengeOpen} />
+          <div className={`${isChallengeOpen ? 'pointer-events-none blur-sm opacity-50' : ''} transition-all duration-300`}>
+            <Footer />
+          </div>
         </div>
       )}
     </>
