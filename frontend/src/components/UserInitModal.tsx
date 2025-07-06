@@ -1,58 +1,52 @@
 import React, { useState } from 'react';
-import { User, Terminal, Zap } from 'lucide-react';
+import { User, Terminal, Zap, Mail } from 'lucide-react';
+import { signUpUser } from '../firebase/auth';
+import type { User as FirebaseUser } from 'firebase/auth'; // Import the Firebase user type
 
+// Define the types for the component's props
 interface UserInitModalProps {
   isOpen: boolean;
-  onUserCreate: (username: string) => void;
+  onUserCreate: (user: FirebaseUser) => void;
 }
 
-interface UserData {
-  username: string;
-  password: string;
-  createdAt: string;
-}
-
-const DEFAULT_PASSWORD = '123456';
-
+// Apply the props interface to the component
 const UserInitModal: React.FC<UserInitModalProps> = ({ isOpen, onUserCreate }) => {
-  const [username, setUsername] = useState('');
+  const [formData, setFormData] = useState({
+    email: '',
+    username: '',
+    password: ''
+  });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState('');
 
-  // Helper functions for local authentication
-  const getUsers = (): UserData[] => {
-    const users = localStorage.getItem('hackquest-users');
-    return users ? JSON.parse(users) : [];
-  };
-
-  const saveUser = (userData: UserData) => {
-    const users = getUsers();
-    const existingUserIndex = users.findIndex(u => u.username === userData.username);
-    if (existingUserIndex >= 0) {
-      users[existingUserIndex] = userData;
-    } else {
-      users.push(userData);
-    }
-    localStorage.setItem('hackquest-users', JSON.stringify(users));
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
+    setError('');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!username.trim()) return;
+    if (!formData.email.trim() || !formData.username.trim() || !formData.password.trim()) {
+        setError("Please fill out all fields.");
+        return;
+    };
+
     setIsSubmitting(true);
+    setError('');
+
     try {
-      // Add user to hackquest-users with default password
-      const newUser: UserData = {
-        username: username.trim(),
-        password: DEFAULT_PASSWORD,
-        createdAt: new Date().toISOString()
-      };
-      saveUser(newUser);
-      // Store the username in localStorage for the current session
-      localStorage.setItem('hackquest-current-user', username.trim());
-      // Call the parent handler to initialize the user
-      onUserCreate(username.trim());
-    } catch (error) {
-      console.error('Error initializing user:', error);
+      // Create user with Firebase
+      const userCredential = await signUpUser(formData.email, formData.password, formData.username);
+      console.log('User created successfully:', userCredential.user);
+
+      // Call the parent handler with the user object
+      onUserCreate(userCredential.user);
+    } catch (err: any) {
+      console.error('Error creating user:', err);
+      setError(err.message || 'Failed to create user');
     } finally {
       setIsSubmitting(false);
     }
@@ -78,6 +72,33 @@ const UserInitModal: React.FC<UserInitModalProps> = ({ isOpen, onUserCreate }) =
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Error Message */}
+          {error && (
+            <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-red-600 text-sm">{error}</p>
+            </div>
+          )}
+
+          {/* Email Field */}
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-2 font-primary">
+              Email Address
+            </label>
+            <div className="relative">
+              <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
+              <input
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleInputChange}
+                placeholder="agent@hackquest.com"
+                className="w-full pl-10 pr-4 py-3 bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent text-slate-800 placeholder-slate-400 font-mono transition-all duration-300"
+                required
+              />
+            </div>
+          </div>
+
+          {/* Username Field */}
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-2 font-primary">
               Agent Callsign
@@ -86,23 +107,39 @@ const UserInitModal: React.FC<UserInitModalProps> = ({ isOpen, onUserCreate }) =
               <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
               <input
                 type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                name="username"
+                value={formData.username}
+                onChange={handleInputChange}
                 placeholder="e.g., Ghost, Viper, Neo"
                 className="w-full pl-10 pr-4 py-3 bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent text-slate-800 placeholder-slate-400 font-mono transition-all duration-300"
                 maxLength={20}
                 required
               />
             </div>
-             <p className="text-xs text-slate-500 mt-2">
-                Max 20 characters. This will be your legend on the leaderboard.<br/>
-                <span className="text-cyan-600 font-bold">Default password: {DEFAULT_PASSWORD}</span>
-             </p>
+          </div>
+
+          {/* Password Field */}
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-2 font-primary">
+              Security Key
+            </label>
+            <div className="relative">
+              <Terminal className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
+              <input
+                type="password"
+                name="password"
+                value={formData.password}
+                onChange={handleInputChange}
+                placeholder="Choose a secure password"
+                className="w-full pl-10 pr-4 py-3 bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent text-slate-800 placeholder-slate-400 font-mono transition-all duration-300"
+                required
+              />
+            </div>
           </div>
 
           <button
             type="submit"
-            disabled={!username.trim() || isSubmitting}
+            disabled={isSubmitting}
             className="w-full group relative px-6 py-3 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-lg font-semibold text-white transform hover:scale-105 transition-all duration-300 hover:shadow-lg hover:shadow-cyan-500/25 disabled:opacity-50 disabled:cursor-not-allowed font-heading"
           >
             <span className="relative z-10 flex items-center justify-center">
@@ -118,32 +155,11 @@ const UserInitModal: React.FC<UserInitModalProps> = ({ isOpen, onUserCreate }) =
                 </>
               )}
             </span>
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-cyan-700 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
           </button>
         </form>
-
-        {/* Footer Stats */}
-        <div className="mt-8 pt-6 border-t border-slate-200/80">
-          <div className="grid grid-cols-3 gap-4 text-center text-sm">
-            <div>
-              <div className="font-bold text-cyan-600">15K+</div>
-              <div className="text-slate-500 text-xs">Agents Online</div>
-            </div>
-            <div>
-              <div className="font-bold text-cyan-600">50+</div>
-              <div className="text-slate-500 text-xs">Live Challenges</div>
-            </div>
-            <div>
-              <div className="font-bold text-cyan-600">24/7</div>
-              <div className="text-slate-500 text-xs">Learning Hub</div>
-            </div>
-          </div>
-        </div>
-
       </div>
     </div>
   );
 };
 
 export default UserInitModal;
-

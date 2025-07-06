@@ -4,77 +4,41 @@ import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import ChallengeGrid from './components/ChallengeGrid';
 import Footer from './components/Footer';
-import UserInitModal from './components/UserInitModal';
-import { GameProvider, useGame } from './context/GameContext';
+import { GameProvider } from './context/GameContext';
+
+// Impor fungsi penting dari file auth.js Anda
+import { onAuthStateChange, logoutUser } from './firebase/auth.ts';
+import type { User as FirebaseUser } from 'firebase/auth';
+
 
 function AppContent() {
-  const { currentUser, initializeUser } = useGame();
-  const [showUserInit, setShowUserInit] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  // State untuk menyimpan object user dari Firebase
+  const [currentUser, setCurrentUser] = useState<FirebaseUser | null>(null);
+  // State untuk menampilkan loading screen saat aplikasi pertama kali berjalan
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Handle URL errors (like email confirmation errors)
-    const urlParams = new URLSearchParams(window.location.hash.substring(1));
-    const error = urlParams.get('error');
-    const errorDescription = urlParams.get('error_description');
-    
-    if (error) {
-      console.log('URL Error:', error, errorDescription);
-      // Clear the URL error
-      window.history.replaceState({}, document.title, window.location.pathname);
-    }
+    // onAuthStateChange adalah listener dari Firebase.
+    // Ia akan secara otomatis berjalan ketika pengguna login atau logout.
+    const unsubscribe = onAuthStateChange((user) => {
+      setCurrentUser(user); // `user` akan berisi data jika login, dan `null` jika logout
+      setIsLoading(false); // Sembunyikan loading setelah status otentikasi diketahui
+    });
 
-    // Check for existing local session
-    const checkSession = () => {
-      try {
-        const currentUser = localStorage.getItem('hackquest-current-user');
-        
-        if (currentUser) {
-          // User is authenticated locally
-          if (!window.location.pathname.includes('hackquest-user')) {
-            initializeUser(currentUser);
-          }
-          setIsAuthenticated(true);
-        }
-      } catch (error) {
-        console.error('Session check error:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+    // Ini penting untuk membersihkan listener saat komponen tidak lagi digunakan
+    return () => unsubscribe();
+  }, []);
 
-    checkSession();
-  }, [initializeUser]);
-
-  useEffect(() => {
-    if (!currentUser && !isAuthenticated && !isLoading) {
-      setShowUserInit(true);
-    }
-  }, [currentUser, isAuthenticated, isLoading]);
-
-  const handleUserCreate = (username: string) => {
-    initializeUser(username);
-    setShowUserInit(false);
-    setIsAuthenticated(true);
-  };
-
-  const handleLogin = () => {
-    setIsAuthenticated(true);
-  };
-
-  const handleLogout = () => {
+  const handleLogout = async () => {
     try {
-      // Clear local session
-      localStorage.removeItem('hackquest-current-user');
-      localStorage.removeItem('hackquest-user');
-      setIsAuthenticated(false);
+      await logoutUser();
+      setCurrentUser(null);
     } catch (error) {
-      console.error('Logout error:', error);
+      console.error("Gagal untuk logout:", error);
     }
   };
 
-  // Show loading state
+  // Selama Firebase memeriksa status login, tampilkan loading screen
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-white via-slate-50 to-cyan-50 flex items-center justify-center">
@@ -82,33 +46,30 @@ function AppContent() {
           <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-r from-cyan-100 to-blue-100 flex items-center justify-center border border-cyan-300/50">
             <div className="w-8 h-8 border-2 border-cyan-600 border-t-transparent rounded-full animate-spin"></div>
           </div>
-          <h2 className="text-xl font-semibold text-slate-700">Initializing HackQuest...</h2>
+          <h2 className="text-xl font-semibold text-slate-700">Menginisialisasi HackQuest...</h2>
         </div>
       </div>
     );
   }
 
-  // Show login page if not authenticated
-  if (!isAuthenticated) {
-    return <Login onLogin={handleLogin} />;
-  }
-
+  
   return (
     <>
-      <div className="min-h-screen bg-gradient-to-br from-white via-slate-50 to-cyan-50">
-        <Navbar onLogout={handleLogout} />
-        <Hero/>
-        <ChallengeGrid />
-        <Footer />
-      </div>
-      <UserInitModal
-        isOpen={showUserInit}
-        onUserCreate={handleUserCreate}
-      />
+      {!currentUser ? (
+        <Login />
+      ) : (
+        <div className="min-h-screen bg-gradient-to-br from-white via-slate-50 to-cyan-50">
+          <Navbar onLogout={handleLogout} />
+          <Hero />
+          <ChallengeGrid />
+          <Footer />
+        </div>
+      )}
     </>
   );
 }
 
+// Tidak ada perubahan di sini
 function App() {
   return (
     <GameProvider>

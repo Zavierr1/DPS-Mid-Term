@@ -1,28 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import { Eye, EyeOff, Shield, Lock, User, Terminal, Zap } from 'lucide-react';
+import { Eye, EyeOff, Shield, Lock, User, Terminal, Zap, Mail } from 'lucide-react';
+// Import Firebase auth functions
+import { signUpUser, signInUser } from '../firebase/auth.js';
 
-interface LoginProps {
-  onLogin?: () => void;
-}
-
-interface UserData {
-  username: string;
-  password: string;
-  createdAt: string;
-}
-
-const Login: React.FC<LoginProps> = ({ onLogin }) => {
+const Login: React.FC = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
+    email: '',
     username: '',
     password: '',
     confirmPassword: ''
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
   const [terminalText, setTerminalText] = useState('');
 
-  // Terminal animation effect
+  // Hapus useEffect untuk onAuthStateChange dari sini karena sudah dipindah ke App.tsx
+
+  // useEffect untuk animasi terminal
   useEffect(() => {
     const messages = [
       'Initializing secure connection...',
@@ -57,103 +53,52 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
   }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
-  };
-
-  // Helper functions for local authentication
-  const getUsers = (): UserData[] => {
-    const users = localStorage.getItem('hackquest-users');
-    return users ? JSON.parse(users) : [];
-  };
-
-  const saveUser = (userData: UserData) => {
-    const users = getUsers();
-    const existingUserIndex = users.findIndex(u => u.username === userData.username);
-    
-    if (existingUserIndex >= 0) {
-      users[existingUserIndex] = userData;
-    } else {
-      users.push(userData);
-    }
-    
-    localStorage.setItem('hackquest-users', JSON.stringify(users));
-  };
-
-  const authenticateUser = (username: string, password: string): boolean => {
-    const users = getUsers();
-    const user = users.find(u => u.username === username && u.password === password);
-    return !!user;
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+    setError('');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setError('');
+
+    const { email, password, confirmPassword, username } = formData;
     
     try {
       if (isLogin) {
-        // Handle login
-        if (authenticateUser(formData.username, formData.password)) {
-          // Store current user session
-          localStorage.setItem('hackquest-current-user', formData.username);
-          if (onLogin) onLogin();
-        } else {
-          throw new Error('Invalid username or password');
-        }
+        // Logika untuk Login
+        await signInUser(email, password);
+        // Selesai! `App.tsx` akan otomatis mendeteksi perubahan ini dan menampilkan halaman utama.
       } else {
-        // Handle registration
-        if (formData.password !== formData.confirmPassword) {
-          throw new Error('Passwords do not match');
-        }
-
-        if (formData.username.length < 3) {
-          throw new Error('Username must be at least 3 characters long');
-        }
-
-        const users = getUsers();
-        const existingUser = users.find(u => u.username === formData.username);
+        // Logika untuk Registrasi
+        if (password !== confirmPassword) throw new Error('Password tidak cocok.');
+        if (username.length < 3) throw new Error('Username minimal 3 karakter.');
+        if (password.length < 6) throw new Error('Password minimal 6 karakter.');
         
-        if (existingUser) {
-          throw new Error('Username already exists');
-        }
-
-        // Create new user
-        const newUser: UserData = {
-          username: formData.username,
-          password: formData.password,
-          createdAt: new Date().toISOString()
-        };
-
-        saveUser(newUser);
-        
-        // Store current user session
-        localStorage.setItem('hackquest-current-user', formData.username);
-        
-        // Switch to login mode and show success message
-        setIsLogin(true);
-        setFormData({
-          username: formData.username,
-          password: '',
-          confirmPassword: ''
-        });
-        
-        if (onLogin) onLogin();
+        await signUpUser(email, password, username);
+        alert('Registrasi berhasil! Silakan login.');
+        setIsLogin(true); // Arahkan pengguna ke mode login setelah berhasil daftar
       }
-    } catch (error) {
-      console.error('Authentication error:', error);
-      alert(error instanceof Error ? error.message : 'Authentication failed');
+    } catch (err: any) {
+      console.error('Error:', err);
+      // Memberi pesan error yang jelas kepada pengguna
+      if (err.code === 'auth/invalid-credential') {
+        setError('Email atau password yang Anda masukkan salah.');
+      } else if (err.code === 'auth/email-already-in-use') {
+        setError('Email ini sudah digunakan oleh agen lain.');
+      } else {
+        setError(err.message || 'Terjadi kesalahan pada server.');
+      }
     } finally {
       setIsLoading(false);
     }
   };
 
+  // Kode JSX return statement
   return (
     <div className="min-h-screen bg-gradient-to-br from-white via-slate-50 to-cyan-50 flex items-center justify-center p-4 relative overflow-hidden">
       {/* Animated Background Elements */}
       <div className="absolute inset-0">
-        {/* Grid Pattern */}
         <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width=%2260%22 height=%2260%22 viewBox=%220 0 60 60%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cg fill=%22none%22 fill-rule=%22evenodd%22%3E%3Cg fill=%22%2300CED1%22 fill-opacity=%220.05%22%3E%3Cpath d=%22M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z%22/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-30"></div>
       </div>
 
@@ -192,24 +137,52 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
 
             {/* Form */}
             <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Username Field */}
+              {/* Error Message */}
+              {error && (
+                <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+                  <p className="text-red-600 text-sm">{error}</p>
+                </div>
+              )}
+
+              {/* Email Field */}
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2 font-primary">
-                  Agent ID
+                  Email Address
                 </label>
                 <div className="relative">
-                  <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
+                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
                   <input
-                    type="text"
-                    name="username"
-                    value={formData.username}
+                    type="email"
+                    name="email"
+                    value={formData.email}
                     onChange={handleInputChange}
                     className="w-full pl-10 pr-4 py-3 bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent text-slate-800 placeholder-slate-400 font-mono transition-all duration-300"
-                    placeholder={isLogin ? "Enter your agent ID" : "Choose your agent ID"}
+                    placeholder="agent@hackquest.com"
                     required
                   />
                 </div>
               </div>
+
+              {/* Username Field (Registration only) */}
+              {!isLogin && (
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2 font-primary">
+                    Agent Callsign
+                  </label>
+                  <div className="relative">
+                    <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
+                    <input
+                      type="text"
+                      name="username"
+                      value={formData.username}
+                      onChange={handleInputChange}
+                      className="w-full pl-10 pr-4 py-3 bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent text-slate-800 placeholder-slate-400 font-mono transition-all duration-300"
+                      placeholder="Choose your callsign"
+                      required={!isLogin}
+                    />
+                  </div>
+                </div>
+              )}
 
               {/* Password Field */}
               <div>
@@ -252,7 +225,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                       onChange={handleInputChange}
                       className="w-full pl-10 pr-4 py-3 bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent text-slate-800 placeholder-slate-400 font-mono transition-all duration-300"
                       placeholder="Confirm your security key"
-                      required
+                      required={!isLogin}
                     />
                   </div>
                 </div>
