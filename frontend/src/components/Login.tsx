@@ -83,11 +83,11 @@ const Login: React.FC = () => {
       console.error('Error:', err);
       // Memberi pesan error yang jelas kepada pengguna
       if (err.code === 'auth/invalid-credential') {
-        setError('Email atau password yang Anda masukkan salah.');
+        setError('Incorrect email or password.');
       } else if (err.code === 'auth/email-already-in-use') {
-        setError('Email ini sudah digunakan oleh agen lain.');
+        setError('This email is already used by another agent.');
       } else {
-        setError(err.message || 'Terjadi kesalahan pada server.');
+        setError(err.message || 'A server error occurred.');
       }
     } finally {
       setIsLoading(false);
