@@ -1,14 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { X, Terminal, CheckCircle, XCircle, Lightbulb, Target, AlertTriangle, Zap } from 'lucide-react';
-import { matchXSSChallenge } from '../data/challengeAnswers';
 
 // Define the structure for each challenge
 interface Challenge {
   id: number;
   question: string;
   hint: string;
-  expectedPayload: string;
-  answerKey?: string; // Key to look up in the dataset
+  answerKey: string; // Key to look up in the dataset - now required
   vulnerableCode: string;
   explanation: string;
   points: number;
@@ -27,7 +25,6 @@ const xssChallenges: Challenge[] = [
         id: 1,
         question: "Find a basic XSS vulnerability. Your goal is to inject a script that triggers an alert dialog.",
         hint: "Classic XSS starts with a <script> tag. Try inserting one into the input field.",
-        expectedPayload: "<script>alert('XSS')</script>",
         answerKey: "xss_basic_script_alert",
         vulnerableCode: `// The user input is directly rendered into the DOM.
 document.getElementById('comments').innerHTML = userInput;`,
@@ -38,7 +35,6 @@ document.getElementById('comments').innerHTML = userInput;`,
         id: 2,
         question: "The developer has filtered out <script> tags. Find another way to execute your alert.",
         hint: "Many HTML tags have event handlers (e.g., onerror, onload) that can run scripts. Think about an image that fails to load.",
-        expectedPayload: "<img src=x onerror=alert('XSS')>",
         answerKey: "xss_img_onerror",
         vulnerableCode: `// A basic filter is in place.
 const filtered = userInput.replace(/<script[^>]*>.*?<\\/script>/gi, '');
@@ -50,7 +46,6 @@ document.getElementById('content').innerHTML = filtered;`,
         id: 3,
         question: "Exploit a DOM-based XSS. The page uses 'document.write()' with a URL parameter. Break out of the script context.",
         hint: "You need to close the existing script tag and inject your own. Look at the vulnerable code to see how your input is being placed.",
-        expectedPayload: "</script><script>alert('DOM-XSS')</script>",
         answerKey: "xss_dom_script_break",
         vulnerableCode: `const urlParam = new URLSearchParams(window.location.search).get('name');
 document.write('<script>var username = "' + urlParam + '";</script>');`,
@@ -61,7 +56,6 @@ document.write('<script>var username = "' + urlParam + '";</script>');`,
         id: 4,
         question: "Bypass a Content Security Policy (CSP) that blocks inline scripts. Your payload should still trigger an alert.",
         hint: "The CSP is strict. Look for ways to execute code in a different context, perhaps using an iframe and the 'srcdoc' attribute.",
-        expectedPayload: "<iframe srcdoc='<script>parent.alert(\"CSP-Bypass\")</script>'>",
         answerKey: "xss_csp_bypass_iframe",
         vulnerableCode: `Content-Security-Policy: script-src 'self'
 // CSP blocks inline scripts and eval().
@@ -73,7 +67,6 @@ document.write('<script>var username = "' + urlParam + '";</script>');`,
         id: 5,
         question: "Exploit a reflected XSS in a search function that encodes '<' and '>' but not quotes.",
         hint: "Angle brackets are blocked, so you can't create new tags. Try breaking out of the 'value' attribute of the input field to add a new attribute.",
-        expectedPayload: "\" onmouseover=\"alert('Reflected-XSS')\"",
         answerKey: "xss_reflected_attribute_break",
         vulnerableCode: `// The filter only encodes angle brackets.
 const encoded = userInput.replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -93,6 +86,9 @@ const XSSChallenge: React.FC<XSSChallengeProps> = ({ isOpen, onClose, onComplete
   const [totalScore, setTotalScore] = useState(0);
   const [timeElapsed, setTimeElapsed] = useState(0);
   const [startTime, setStartTime] = useState<number>(Date.now());
+  const [xssPatterns, setXssPatterns] = useState<Record<string, any> | null>(null);
+  const [checkingAnswer, setCheckingAnswer] = useState(false);
+  const [answerError, setAnswerError] = useState('');
 
   useEffect(() => {
     if (isOpen) {
@@ -141,39 +137,73 @@ const XSSChallenge: React.FC<XSSChallengeProps> = ({ isOpen, onClose, onComplete
     setShowHint(false);
   };
 
-  const checkAnswer = () => {
-    if (!userInput.trim()) return;
-
+  // Fetch XSS patterns from backend when challenge changes
+  useEffect(() => {
     const challenge = xssChallenges[currentChallenge];
+    if (challenge.answerKey) {
+      fetch(`/api/challenges/xss`)
+        .then(res => res.json())
+        .then((data: Record<string, any>) => {
+          setXssPatterns(data);
+        })
+        .catch(() => {
+          setXssPatterns(null);
+        });
+    } else {
+      setXssPatterns(null);
+    }
+  }, [currentChallenge]);
+
+  const checkAnswer = async () => {
+    if (!userInput.trim()) return;
+    setCheckingAnswer(true);
+    setAnswerError('');
+    setAttempts(prev => prev + 1);
     
+    const challenge = xssChallenges[currentChallenge];
     let isAnswerCorrect = false;
     
-    // Use pattern matching if answerKey is defined
-    if (challenge.answerKey) {
-      isAnswerCorrect = matchXSSChallenge(userInput, challenge.answerKey);
-    } else {
-      // Fallback to simple comparison
-      isAnswerCorrect = userInput.trim().toLowerCase() === challenge.expectedPayload.toLowerCase();
+    try {
+      if (challenge.answerKey && xssPatterns && xssPatterns[challenge.answerKey]) {
+        const res = await fetch('/api/challenges/xss/check', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            answerKey: challenge.answerKey,
+            userInput
+          })
+        });
+        
+        if (res.ok) {
+          const result = await res.json();
+          isAnswerCorrect = result.isMatch;
+        } else {
+          const err = await res.json();
+          setAnswerError(err.error || 'Server error');
+        }
+      } else {
+        setAnswerError('Challenge patterns not loaded from backend');
+      }
+    } catch (error) {
+      console.error('Backend unavailable:', error);
+      setAnswerError('Backend service unavailable. Please ensure the backend server is running.');
     }
     
-    setAttempts(prev => prev + 1);
     setIsCorrect(isAnswerCorrect);
-
+    setCheckingAnswer(false);
+    
     if (isAnswerCorrect) {
-      const scoreMultiplier = Math.max(1 - (attempts * 0.15), 0.4); // Higher penalty for attempts
-      const earnedPoints = Math.round(challenge.points * scoreMultiplier);
-      const newTotalScore = totalScore + earnedPoints;
-      setTotalScore(newTotalScore);
-
+      const scoreEarned = Math.max(challenge.points - (attempts * 2), 5);
+      setTotalScore(prev => prev + scoreEarned);
+      
       setTimeout(() => {
         if (currentChallenge < xssChallenges.length - 1) {
           setCurrentChallenge(prev => prev + 1);
           resetForNextChallenge();
         } else {
-          onComplete(newTotalScore);
-          onClose();
+          onComplete(totalScore + scoreEarned);
         }
-      }, 2500);
+      }, 2000);
     }
   };
 
@@ -332,6 +362,13 @@ const XSSChallenge: React.FC<XSSChallengeProps> = ({ isOpen, onClose, onComplete
               ) : (
                 <p className="font-semibold text-red-700">Payload failed. The system rejected your payload. Review the code and try again.</p>
               )}
+            </div>
+          )}
+
+          {/* Loading and Error States */}
+          {checkingAnswer && (
+            <div className="p-4 rounded-lg border-l-4 bg-amber-500/10 border-amber-500">
+              <p className="text-amber-700">{answerError || 'Checking answer...'}</p>
             </div>
           )}
         </div>

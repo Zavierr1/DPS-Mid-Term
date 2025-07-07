@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { X, Terminal, CheckCircle, XCircle, Lightbulb, Target, Zap } from 'lucide-react';
-import { matchSQLChallenge } from '../data/challengeAnswers';
 
 interface SQLInjectionChallengeProps {
   isOpen: boolean;
@@ -12,8 +11,7 @@ interface Challenge {
   id: number;
   question: string;
   hint: string;
-  expectedPayload: string;
-  answerKey?: string; // Key to look up in the dataset
+  answerKey: string; // Key to look up in the dataset - now required
   vulnerableCode: string;
   explanation: string;
   points: number;
@@ -24,7 +22,6 @@ const sqlChallenges: Challenge[] = [
       id: 1, 
       question: "The login form is vulnerable. Bypass authentication by injecting SQL that always returns true.", 
       hint: "Try using a condition that's always true, like '1'='1'.", 
-      expectedPayload: "' OR '1'='1", 
       answerKey: "sql_auth_bypass",
       vulnerableCode: `SELECT * FROM users WHERE username='$input' AND password='$password'`, 
       explanation: "By injecting ' OR '1'='1, the SQL query becomes: SELECT * FROM users WHERE username='' OR '1'='1' AND password='' which always returns true, granting access.", 
@@ -34,7 +31,6 @@ const sqlChallenges: Challenge[] = [
       id: 2, 
       question: "Extract the database version using a UNION-based attack. The query returns one column.", 
       hint: "Use UNION SELECT to add your own data. Database version can be retrieved with @@VERSION or VERSION().", 
-      expectedPayload: "' UNION SELECT @@VERSION--", 
       answerKey: "sql_union_version",
       vulnerableCode: `SELECT name FROM products WHERE id='$input'`, 
       explanation: "UNION SELECT allows you to combine results from different queries. The '--' comments out the rest of the original query, preventing errors.", 
@@ -44,7 +40,6 @@ const sqlChallenges: Challenge[] = [
       id: 3, 
       question: "A search feature is vulnerable. Extract the first table name from the database schema.", 
       hint: "Use information_schema.tables to get table names. Use LIMIT 1 to get the first result.", 
-      expectedPayload: "' UNION SELECT table_name FROM information_schema.tables LIMIT 1--", 
       answerKey: "sql_schema_enum",
       vulnerableCode: `SELECT title, content FROM articles WHERE title LIKE '%$input%'`, 
       explanation: "The information_schema database contains metadata about all tables. This technique helps enumerate the database structure.", 
@@ -54,7 +49,6 @@ const sqlChallenges: Challenge[] = [
       id: 4, 
       question: "Bypass a basic, case-sensitive filter that blocks the 'OR' keyword.", 
       hint: "SQL keywords are not case-sensitive. Try different cases or alternative operators.", 
-      expectedPayload: "' or '1'='1", 
       answerKey: "sql_case_bypass",
       vulnerableCode: `SELECT * FROM users WHERE id='$input' /* Filter blocks: OR */`, 
       explanation: "Many basic filters only check for specific string patterns. Using lowercase 'or' bypasses a case-sensitive filter for 'OR'.", 
@@ -64,7 +58,6 @@ const sqlChallenges: Challenge[] = [
       id: 5, 
       question: "Perform a time-based blind SQL injection. Confirm if the admin's password starts with 'c'.", 
       hint: "Use SLEEP() or BENCHMARK() to create time delays based on a condition.", 
-      expectedPayload: "' AND IF(SUBSTRING((SELECT password FROM users WHERE username='admin'),1,1)='c',SLEEP(5),0)--", 
       answerKey: "sql_time_based_blind",
       vulnerableCode: `SELECT id FROM users WHERE email='$input'`, 
       explanation: "Time-based blind injection uses database delay functions to infer information when no direct output is visible. If the page takes longer to load, the condition is true.", 
@@ -81,6 +74,9 @@ const SQLInjectionChallenge: React.FC<SQLInjectionChallengeProps> = ({ isOpen, o
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
   const [totalScore, setTotalScore] = useState(0);
   const [timeElapsed, setTimeElapsed] = useState(0);
+  const [sqlPatterns, setSqlPatterns] = useState<Record<string, any> | null>(null);
+  const [checkingAnswer, setCheckingAnswer] = useState(false);
+  const [answerError, setAnswerError] = useState('');
 
   useEffect(() => {
     let timer: ReturnType<typeof setInterval>;
@@ -132,39 +128,71 @@ const SQLInjectionChallenge: React.FC<SQLInjectionChallengeProps> = ({ isOpen, o
     setShowHint(false);
   };
 
-  const checkAnswer = () => {
-    if (!userInput.trim()) return;
-
+  // Fetch SQL patterns from backend when challenge changes
+  useEffect(() => {
     const challenge = sqlChallenges[currentChallenge];
-    
+    if (challenge.answerKey) {
+      fetch(`/api/challenges/sql`)
+        .then(res => res.json())
+        .then((data: Record<string, any>) => {
+          setSqlPatterns(data);
+        })
+        .catch(() => {
+          setSqlPatterns(null);
+        });
+    } else {
+      setSqlPatterns(null);
+    }
+  }, [currentChallenge]);
+
+  const checkAnswer = async () => {
+    if (!userInput.trim()) return;
+    setCheckingAnswer(true);
+    setAnswerError('');
+    const challenge = sqlChallenges[currentChallenge];
     let isAnswerCorrect = false;
     
-    // Use pattern matching if answerKey is defined
-    if (challenge.answerKey) {
-      isAnswerCorrect = matchSQLChallenge(userInput, challenge.answerKey);
-    } else {
-      // Fallback to simple comparison
-      isAnswerCorrect = userInput.trim().toLowerCase() === challenge.expectedPayload.toLowerCase();
-    }
-    
-    setAttempts(prev => prev + 1);
-    setIsCorrect(isAnswerCorrect);
-
-    if (isAnswerCorrect) {
-      const scoreMultiplier = Math.max(1 - (attempts * 0.15), 0.4); // Higher penalty for attempts
-      const earnedPoints = Math.round(challenge.points * scoreMultiplier);
-      const newTotalScore = totalScore + earnedPoints;
-      setTotalScore(newTotalScore);
-
-      setTimeout(() => {
-        if (currentChallenge < sqlChallenges.length - 1) {
-          setCurrentChallenge(prev => prev + 1);
-          resetForNextChallenge();
+    try {
+      if (challenge.answerKey && sqlPatterns && sqlPatterns[challenge.answerKey]) {
+        const res = await fetch('/api/challenges/sql/check', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            answerKey: challenge.answerKey,
+            userInput
+          })
+        });
+        if (res.ok) {
+          const result = await res.json();
+          isAnswerCorrect = result.isMatch;
         } else {
-          onComplete(newTotalScore);
-          onClose(); // Close after completing the final challenge
+          const err = await res.json();
+          setAnswerError(err.error || 'Server error');
         }
-      }, 2500);
+      } else {
+        setAnswerError('Backend service unavailable');
+      }
+    } catch (error) {
+      console.error('Backend unavailable:', error);
+      setAnswerError('Backend service unavailable. Please ensure the backend server is running.');
+    } finally {
+      setAttempts(prev => prev + 1);
+      setIsCorrect(isAnswerCorrect);
+      if (isAnswerCorrect) {
+        const scoreMultiplier = Math.max(1 - (attempts * 0.15), 0.4);
+        const earnedPoints = Math.round(challenge.points * scoreMultiplier);
+        const newTotalScore = totalScore + earnedPoints;
+        setTotalScore(newTotalScore);
+        setTimeout(() => {
+          if (currentChallenge < sqlChallenges.length - 1) {
+            setCurrentChallenge(prev => prev + 1);
+            resetForNextChallenge();
+          } else {
+            onComplete(newTotalScore);
+            onClose();
+          }
+        }, 2500);
+      }
     }
   };
 
@@ -312,6 +340,13 @@ const SQLInjectionChallenge: React.FC<SQLInjectionChallengeProps> = ({ isOpen, o
               ) : (
                 <p className="font-semibold text-red-700">Access Denied. The system rejected your payload. Review your logic and try again.</p>
               )}
+            </div>
+          )}
+
+          {/* Loading and Error States */}
+          {checkingAnswer && (
+            <div className="p-4 rounded-lg border-l-4 bg-amber-500/10 border-amber-500">
+              <p className="text-amber-700">{answerError}</p>
             </div>
           )}
         </div>

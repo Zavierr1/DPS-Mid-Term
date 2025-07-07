@@ -38,11 +38,9 @@ const UserInitModal: React.FC<UserInitModalProps> = ({ isOpen, onUserCreate }) =
     setError('');
 
     try {
-      // Create user with Firebase
+      // Register user via Firebase Auth
       const userCredential = await signUpUser(formData.email, formData.password, formData.username);
-      console.log('User created successfully:', userCredential.user);
-
-      // Call the parent handler with the user object
+      // Call the parent handler with the Firebase user object
       onUserCreate(userCredential.user);
     } catch (err: any) {
       console.error('Error creating user:', err);
@@ -151,7 +149,7 @@ const UserInitModal: React.FC<UserInitModalProps> = ({ isOpen, onUserCreate }) =
               ) : (
                 <>
                   <Zap className="w-5 h-5 mr-2" />
-                  <span>Go Online</span>
+                  <span>Initialize Profile</span>
                 </>
               )}
             </span>

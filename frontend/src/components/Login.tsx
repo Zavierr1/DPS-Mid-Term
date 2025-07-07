@@ -66,26 +66,37 @@ const Login: React.FC = () => {
     
     try {
       if (isLogin) {
-        // Logika untuk Login
+        // Login: use Firebase Auth
         await signInUser(email, password);
-        // Selesai! `App.tsx` akan otomatis mendeteksi perubahan ini dan menampilkan halaman utama.
       } else {
-        // Logika untuk Registrasi
-        if (password !== confirmPassword) throw new Error('Password tidak cocok.');
-        if (username.length < 3) throw new Error('Username minimal 3 karakter.');
-        if (password.length < 6) throw new Error('Password minimal 6 karakter.');
+        // Registration: use Firebase Auth (works with any email)
+        if (password !== confirmPassword) throw new Error('Passwords do not match.');
+        if (username.length < 3) throw new Error('Username must be at least 3 characters.');
+        if (password.length < 6) throw new Error('Password must be at least 6 characters.');
         
         await signUpUser(email, password, username);
-        alert('Registrasi berhasil! Silakan login.');
-        setIsLogin(true); // Arahkan pengguna ke mode login setelah berhasil daftar
+        alert('Registration successful! Please login.');
+        setIsLogin(true);
+        
+        // Clear form
+        setFormData({
+          email: '',
+          username: '',
+          password: '',
+          confirmPassword: ''
+        });
       }
     } catch (err: any) {
       console.error('Error:', err);
-      // Memberi pesan error yang jelas kepada pengguna
+      // Clear error messages for users
       if (err.code === 'auth/invalid-credential') {
         setError('Incorrect email or password.');
       } else if (err.code === 'auth/email-already-in-use') {
         setError('This email is already used by another agent.');
+      } else if (err.code === 'auth/weak-password') {
+        setError('Password should be at least 6 characters.');
+      } else if (err.code === 'auth/invalid-email') {
+        setError('Please enter a valid email address.');
       } else {
         setError(err.message || 'A server error occurred.');
       }

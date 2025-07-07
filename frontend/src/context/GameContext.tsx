@@ -44,7 +44,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       completedChallenges: [],
       streak: 0,
       country: 'Unknown',
-      avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${username}`,
+      avatar: '', // Empty avatar - just use User icon
       joinDate: new Date().toISOString(),
       lastActive: new Date().toISOString(),
       badges: ['Newbie Hacker']

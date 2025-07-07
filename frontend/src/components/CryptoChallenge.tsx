@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { X, Terminal, CheckCircle, XCircle, Lightbulb, Target, Zap } from 'lucide-react';
-import { matchAnswer } from '../utils/answerMatcher';
-import { getAnswersForChallenge } from '../data/challengeAnswers';
 
 interface CryptoChallengeProps {
   isOpen: boolean;
@@ -13,8 +11,7 @@ interface Challenge {
   id: number;
   question: string;
   hint: string;
-  expectedPayload: string;
-  answerKey?: string; // Key to look up in the dataset
+  answerKey: string; // Key to look up in the dataset - now required
   vulnerableCode: string; // Renamed for consistency, was cryptographicDetails
   explanation: string;
   points: number;
@@ -25,7 +22,6 @@ const cryptoChallenges: Challenge[] = [
         id: 1,
         question: "A message was intercepted: 'KHOOR, ZRUOG!'. It's encrypted with a simple Caesar cipher with a shift of 3. What is the original message?",
         hint: "In a Caesar cipher, each letter is shifted by a fixed number of places down the alphabet. To decode, you must shift them back. 'A' would become 'X', 'B' would become 'Y', etc.",
-        expectedPayload: "HELLO, WORLD!",
         answerKey: "caesar_cipher_hello_world",
         vulnerableCode: "Cipher: Caesar | Shift: 3\n\nExample Decryption:\nD -> A\nE -> B\nF -> C",
         explanation: "Correct! A Caesar cipher is a basic substitution cipher. By shifting each letter back by 3 positions in the alphabet, you successfully decrypted the message.",
@@ -35,7 +31,6 @@ const cryptoChallenges: Challenge[] = [
         id: 2,
         question: "You've found a Base64 encoded string: 'U2VjdXJpdHkgaXMgYW4gaWxsdXNpb24u'. What does it decode to?",
         hint: "Base64 is an encoding scheme, not an encryption method. Use any standard Base64 decoder to reveal the plaintext.",
-        expectedPayload: "Security is an illusion.",
         answerKey: "base64_security_illusion",
         vulnerableCode: "Encoding: Base64\n\nCharacters: A-Z, a-z, 0-9, +, /\nPadding: Uses '=' at the end if needed.",
         explanation: "Excellent. Base64 is used to represent binary data in an ASCII string format. It's often mistaken for encryption but provides no confidentiality.",
@@ -45,7 +40,6 @@ const cryptoChallenges: Challenge[] = [
         id: 3,
         question: "This MD5 hash 'e80b5017098950fc58aad83c8c14978e' corresponds to a common 4-digit PIN. What is the PIN?",
         hint: "MD5 is a broken hashing algorithm. Its hashes for simple inputs (like 4-digit PINs) are widely available in pre-computed 'rainbow tables'. Search for this hash online.",
-        expectedPayload: "1337",
         answerKey: "md5_hash_1337",
         vulnerableCode: "Algorithm: MD5 (Message Digest 5)\n\nType: Cryptographic Hash Function\nWeakness: Vulnerable to collision and pre-image attacks.",
         explanation: "Nicely done. This demonstrates why MD5 is insecure for password or PIN storage. Rainbow tables make reversing simple hashes trivial.",
@@ -55,7 +49,6 @@ const cryptoChallenges: Challenge[] = [
         id: 4,
         question: "Crack this Vigenère cipher: 'RIJVS, GPECT!' using the key 'KEY'.",
         hint: "The Vigenère cipher uses a keyword to shift letters. For the first letter, use 'K' as the shift, for the second use 'E', for the third use 'Y', and then repeat the key.",
-        expectedPayload: "HELLO, AGENT!",
         answerKey: "vigenere_hello_agent",
         vulnerableCode: "Cipher: Vigenère\nKey: 'KEY'\n\nDecryption Formula:\nPi = (Ci - Ki) mod 26",
         explanation: "Great work! The Vigenère cipher improves on the Caesar cipher by using multiple shift values, but it can be broken once the key length is known.",
@@ -72,6 +65,7 @@ const CryptoChallenge: React.FC<CryptoChallengeProps> = ({ isOpen, onClose, onCo
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
   const [totalScore, setTotalScore] = useState(0);
   const [timeElapsed, setTimeElapsed] = useState(0);
+  const [acceptableAnswers, setAcceptableAnswers] = useState<any[]>([]);
 
   useEffect(() => {
     let timer: ReturnType<typeof setInterval>;
@@ -123,39 +117,59 @@ const CryptoChallenge: React.FC<CryptoChallengeProps> = ({ isOpen, onClose, onCo
     setShowHint(false);
   };
 
-  const checkAnswer = () => {
-    if (!userInput.trim()) return;
-
+  // Fetch acceptable answers from backend when challenge changes
+  useEffect(() => {
     const challenge = cryptoChallenges[currentChallenge];
-    
+    if (challenge.answerKey) {
+      fetch(`/api/challenges/crypto`)
+        .then(res => res.json())
+        .then((data: Record<string, any[]>) => {
+          if (challenge.answerKey && data[challenge.answerKey]) {
+            setAcceptableAnswers(data[challenge.answerKey]);
+          } else {
+            setAcceptableAnswers([]);
+          }
+        })
+        .catch(() => {
+          setAcceptableAnswers([]);
+        });
+    } else {
+      setAcceptableAnswers([]);
+    }
+  }, [currentChallenge]);
+
+  const checkAnswer = async () => {
+    if (!userInput.trim()) return;
+    const challenge = cryptoChallenges[currentChallenge];
     let isAnswerCorrect = false;
     let matchDetails = { matchType: 'none', confidence: 0 };
-    
-    // Use flexible matching if answerKey is defined
     if (challenge.answerKey) {
-      const acceptableAnswers = getAnswersForChallenge('crypto', challenge.answerKey);
-      if (acceptableAnswers) {
-        const result = matchAnswer(userInput, acceptableAnswers, {
-          fuzzyThreshold: 80, // Allow 80% similarity for crypto answers
-          strictMode: false
+      if (acceptableAnswers.length > 0) {
+        // Call backend for answer validation
+        const res = await fetch('/api/challenges/check', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            challengeType: 'crypto',
+            answerKey: challenge.answerKey,
+            userInput
+          })
         });
-        isAnswerCorrect = result.isMatch;
-        matchDetails = { matchType: result.matchType, confidence: result.confidence };
+        if (res.ok) {
+          const result = await res.json();
+          isAnswerCorrect = result.isMatch;
+          matchDetails = result;
+        }
       }
     } else {
-      // Fallback to original logic for backwards compatibility
-      isAnswerCorrect = userInput.trim().toLowerCase() === challenge.expectedPayload.toLowerCase();
-      matchDetails = { matchType: 'exact', confidence: 100 };
+      // Backend service unavailable
+      isAnswerCorrect = false;
+      matchDetails = { matchType: 'none', confidence: 0 };
     }
-    
     setAttempts(prev => prev + 1);
     setIsCorrect(isAnswerCorrect);
-
     if (isAnswerCorrect) {
-      // Adjust score based on match type and attempts
       let baseMultiplier = Math.max(1 - (attempts * 0.15), 0.4);
-      
-      // Bonus for exact matches, slight penalty for fuzzy matches
       if (matchDetails.matchType === 'exact') {
         baseMultiplier *= 1.0;
       } else if (matchDetails.matchType === 'alternative') {
@@ -163,18 +177,16 @@ const CryptoChallenge: React.FC<CryptoChallengeProps> = ({ isOpen, onClose, onCo
       } else if (matchDetails.matchType === 'fuzzy') {
         baseMultiplier *= 0.9;
       }
-      
       const earnedPoints = Math.round(challenge.points * baseMultiplier);
       const newTotalScore = totalScore + earnedPoints;
       setTotalScore(newTotalScore);
-
       setTimeout(() => {
         if (currentChallenge < cryptoChallenges.length - 1) {
           setCurrentChallenge(prev => prev + 1);
           resetForNextChallenge();
         } else {
           onComplete(newTotalScore);
-          onClose(); // Close after completing the final challenge
+          onClose();
         }
       }, 2500);
     }
