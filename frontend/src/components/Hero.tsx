@@ -44,7 +44,7 @@ const HeroSection: React.FC = () => {
           {/* Main Title */}
           <h1 className="text-5xl md:text-7xl font-heading font-bold mb-6 leading-tight">
             <span className="bg-gradient-to-r from-cyan-600 via-blue-600 to-cyan-800 bg-clip-text text-transparent animate-gradient">
-              HackGoon
+              HackQuest
             </span>
           </h1>
           
