@@ -12,7 +12,6 @@ interface Challenge {
   description: string;
   difficulty: 'Beginner' | 'Intermediate';
   category: string;
-  points: number;
   participants: number;
   timeEstimate: string;
   completionRate: number;
@@ -24,10 +23,10 @@ interface ChallengeGridProps {
 
 // Mock data remains the same
 const mockChallenges: Challenge[] = [
-    { id: 1, title: 'SQL Injection Mastery', description: 'Master SQL injection attacks from basic bypasses to advanced techniques including blind injection and WAF bypass.', difficulty: 'Beginner', category: 'Web Security', points: 300, participants: 2843, timeEstimate: '45 min', completionRate: 78 },
-    { id: 2, title: 'Cross-Site Scripting (XSS)', description: 'Learn to exploit XSS vulnerabilities including reflected, stored, and DOM-based attacks with CSP bypasses.', difficulty: 'Intermediate', category: 'Web Security', points: 250, participants: 1847, timeEstimate: '35 min', completionRate: 65 },
-    { id: 3, title: 'Cryptography Challenges', description: 'Break classical ciphers, analyze weak implementations, and crack hashes using various cryptanalysis techniques.', difficulty: 'Intermediate', category: 'Cryptography', points: 275, participants: 1247, timeEstimate: '50 min', completionRate: 42 },
-    { id: 4, title: 'Network Security Fundamentals', description: 'Test your knowledge of network protocols, security concepts, and common attack vectors in network environments.', difficulty: 'Beginner', category: 'Network Security', points: 200, participants: 3156, timeEstimate: '25 min', completionRate: 71 },
+    { id: 1, title: 'SQL Injection Mastery', description: 'Master SQL injection attacks from basic bypasses to advanced techniques including blind injection and WAF bypass.', difficulty: 'Beginner', category: 'Web Security', participants: 2843, timeEstimate: '45 min', completionRate: 78 },
+    { id: 2, title: 'Cross-Site Scripting (XSS)', description: 'Learn to exploit XSS vulnerabilities including reflected, stored, and DOM-based attacks with CSP bypasses.', difficulty: 'Intermediate', category: 'Web Security', participants: 1847, timeEstimate: '35 min', completionRate: 65 },
+    { id: 3, title: 'Cryptography Challenges', description: 'Break classical ciphers, analyze weak implementations, and crack hashes using various cryptanalysis techniques.', difficulty: 'Intermediate', category: 'Cryptography', participants: 1247, timeEstimate: '50 min', completionRate: 42 },
+    { id: 4, title: 'Network Security Fundamentals', description: 'Test your knowledge of network protocols, security concepts, and common attack vectors in network environments.', difficulty: 'Beginner', category: 'Network Security', participants: 3156, timeEstimate: '25 min', completionRate: 71 },
 ];
 
 const ChallengeGrid: React.FC<ChallengeGridProps> = ({ onChallengeStateChange }) => {
@@ -142,8 +141,7 @@ const ChallengeGrid: React.FC<ChallengeGridProps> = ({ onChallengeStateChange })
               onClick={() => handleChallengeClick(challenge)}
               className="group relative overflow-hidden bg-white/80 backdrop-blur-lg rounded-2xl border border-cyan-200/50 shadow-lg shadow-cyan-500/10 transition-all duration-300 hover:cursor-pointer hover:shadow-2xl hover:shadow-cyan-500/20 hover:-translate-y-2"
             >
-              <div className="p-6">
-                {/* Header */}
+              <div className="p-6">                          
                 <div className="flex items-start justify-between mb-4">
                   <div>
                     <h3 className="text-xl font-heading font-bold text-slate-800 mb-2 group-hover:text-cyan-600 transition-colors">
@@ -152,10 +150,6 @@ const ChallengeGrid: React.FC<ChallengeGridProps> = ({ onChallengeStateChange })
                     <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold border ${difficultyColors[challenge.difficulty]}`}>
                       {challenge.difficulty}
                     </span>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-2xl font-bold text-cyan-600">{challenge.points}</div>
-                    <div className="text-xs text-slate-500">points</div>
                   </div>
                 </div>
 
