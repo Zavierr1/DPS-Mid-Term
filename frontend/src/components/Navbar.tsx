@@ -63,7 +63,7 @@ const Navbar: React.FC<NavbarProps> = ({ onLogout, isDisabled, user, currentUser
               <div className="absolute inset-0 w-8 h-8 text-cyan-600 opacity-50 animate-pulse-slow" />
             </div>
             <span className="text-2xl font-heading font-bold bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent">
-              GoonerQuest
+              HackQuest
             </span>
           </div>
 
