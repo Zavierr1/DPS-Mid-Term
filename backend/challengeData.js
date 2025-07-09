@@ -28,7 +28,6 @@ const NETWORK_SECURITY_ANSWERS = {
     {
       primary: "Distributed Denial of Service",
       synonyms: [
-        "distributed denial-of-service", 
         "ddos attack", 
         "distributed dos",
         "distributed denial of service attack",
@@ -75,6 +74,7 @@ const NETWORK_SECURITY_ANSWERS = {
         "security barrier",
         "access control"
       ],
+      abbreviations: [],
       alternativeSpellings: ["fire-wall", "fire wall"]
     }
   ],
@@ -103,8 +103,7 @@ const CRYPTOGRAPHY_ANSWERS = {
         "hello, world", 
         "HELLO WORLD", 
         "helloworld",
-        "hello world!",
-        "Hello, World!"
+        "hello world!"
       ]
     }
   ],
@@ -114,11 +113,8 @@ const CRYPTOGRAPHY_ANSWERS = {
       synonyms: ["security is not real", "safety is fake", "security is false"],
       alternativeSpellings: [
         "security is an illusion", 
-        "Security is an illusion", 
         "security is illusion", 
-        "security is a illusion",
-        "Security is an illusion",
-        "security is an illusion."
+        "security is a illusion"
       ]
     }
   ],
@@ -138,8 +134,7 @@ const CRYPTOGRAPHY_ANSWERS = {
         "hello, agent", 
         "HELLO AGENT", 
         "helloagent",
-        "hello agent!",
-        "Hello, Agent!"
+        "hello agent!"
       ]
     }
   ],
@@ -156,7 +151,6 @@ const CRYPTOGRAPHY_ANSWERS = {
       synonyms: ["cybersec rocks", "security rocks"],
       alternativeSpellings: [
         "cybersecurity rocks",
-        "Cybersecurity Rocks!",
         "cyber security rocks!",
         "cybersecurity rocks!"
       ]
